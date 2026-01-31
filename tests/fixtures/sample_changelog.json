@@ -1,0 +1,80 @@
+{
+  "histories": [
+    {
+      "id": "10001",
+      "created": "2026-01-02T09:00:00.000+0000",
+      "author": {
+        "accountId": "abc123",
+        "displayName": "Alice",
+        "emailAddress": "alice@example.com"
+      },
+      "items": [
+        {
+          "field": "status",
+          "fieldtype": "jira",
+          "from": "10000",
+          "fromString": "To Do",
+          "to": "10001",
+          "toString": "In Progress"
+        }
+      ]
+    },
+    {
+      "id": "10002",
+      "created": "2026-01-02T11:00:00.000+0000",
+      "author": {
+        "accountId": "abc123",
+        "displayName": "Alice",
+        "emailAddress": "alice@example.com"
+      },
+      "items": [
+        {
+          "field": "assignee",
+          "fieldtype": "jira",
+          "from": null,
+          "fromString": null,
+          "to": "def456",
+          "toString": "Bob"
+        }
+      ]
+    },
+    {
+      "id": "10003",
+      "created": "2026-01-03T14:00:00.000+0000",
+      "author": {
+        "accountId": "def456",
+        "displayName": "Bob",
+        "emailAddress": "bob@example.com"
+      },
+      "items": [
+        {
+          "field": "status",
+          "fieldtype": "jira",
+          "from": "10001",
+          "fromString": "In Progress",
+          "to": "10002",
+          "toString": "In Review"
+        }
+      ]
+    },
+    {
+      "id": "10004",
+      "created": "2026-01-04T10:00:00.000+0000",
+      "author": {
+        "accountId": "def456",
+        "displayName": "Bob",
+        "emailAddress": "bob@example.com"
+      },
+      "items": [
+        {
+          "field": "status",
+          "fieldtype": "jira",
+          "from": "10002",
+          "fromString": "In Review",
+          "to": "10003",
+          "toString": "Done"
+        }
+      ]
+    }
+  ]
+}

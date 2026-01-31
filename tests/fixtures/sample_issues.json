@@ -1,0 +1,119 @@
+{
+  "issues": [
+    {
+      "key": "TEST-101",
+      "fields": {
+        "summary": "Fix login bug",
+        "issuetype": {"name": "Bug"},
+        "parent": {"key": "TEST-50", "fields": {"summary": "Authentication Epic"}},
+        "assignee": {"displayName": "Alice"},
+        "customfield_10001": {"displayName": "Alice"}
+      },
+      "changelog": {
+        "histories": [
+          {
+            "created": "2026-01-02T09:00:00.000+0000",
+            "author": {"displayName": "Alice"},
+            "items": [
+              {"field": "status", "fromString": "To Do", "toString": "In Progress"}
+            ]
+          },
+          {
+            "created": "2026-01-03T16:00:00.000+0000",
+            "author": {"displayName": "Alice"},
+            "items": [
+              {"field": "status", "fromString": "In Progress", "toString": "Done"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "TEST-102",
+      "fields": {
+        "summary": "Add user profile",
+        "issuetype": {"name": "Story"},
+        "parent": {"key": "TEST-51", "fields": {"summary": "User Profile Feature"}},
+        "assignee": {"displayName": "Alice"},
+        "customfield_10001": null
+      },
+      "changelog": {
+        "histories": [
+          {
+            "created": "2026-01-03T10:00:00.000+0000",
+            "author": {"displayName": "Alice"},
+            "items": [
+              {"field": "status", "fromString": "To Do", "toString": "In Progress"}
+            ]
+          },
+          {
+            "created": "2026-01-03T14:00:00.000+0000",
+            "author": {"displayName": "Alice"},
+            "items": [
+              {"field": "status", "fromString": "In Progress", "toString": "In Review"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "TEST-103",
+      "fields": {
+        "summary": "Refactor auth module",
+        "issuetype": {"name": "Task"},
+        "parent": {"key": "TEST-50", "fields": {"summary": "Authentication Epic"}},
+        "assignee": {"displayName": "Bob"},
+        "customfield_10001": {"displayName": "Bob"}
+      },
+      "changelog": {
+        "histories": [
+          {
+            "created": "2026-01-02T08:00:00.000+0000",
+            "author": {"displayName": "Bob"},
+            "items": [
+              {"field": "status", "fromString": "To Do", "toString": "In Progress"}
+            ]
+          },
+          {
+            "created": "2026-01-04T16:00:00.000+0000",
+            "author": {"displayName": "Bob"},
+            "items": [
+              {"field": "status", "fromString": "In Progress", "toString": "Done"}
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "key": "TEST-104",
+      "fields": {
+        "summary": "Update dependencies",
+        "issuetype": {"name": "Task"},
+        "parent": null,
+        "assignee": null,
+        "customfield_10001": null
+      },
+      "changelog": {
+        "histories": [
+          {
+            "created": "2026-01-05T10:00:00.000+0000",
+            "author": {"displayName": "System"},
+            "items": [
+              {"field": "status", "fromString": "To Do", "toString": "In Progress"}
+            ]
+          },
+          {
+            "created": "2026-01-05T14:00:00.000+0000",
+            "author": {"displayName": "System"},
+            "items": [
+              {"field": "status", "fromString": "In Progress", "toString": "Done"}
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "total": 4,
+  "maxResults": 50,
+  "startAt": 0
+}
