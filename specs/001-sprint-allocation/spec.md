@@ -61,7 +61,9 @@ As a user, I want the tool to correctly handle issues that start or end partway 
 
 5. **Given** a timeframe of Jan 1-15 and an issue in progress from Dec 28 to Jan 10, **When** I run the analyze command, **Then** only the time within Jan 1-10 is counted.
 
-6. **Given** a developer who only has 3 hours of tracked "In Progress" time for a day, **When** I normalize their time, **Then** that time is scaled up proportionally to 8 hours (assuming a full workday).
+6. **Given** a developer who only has 3 hours of tracked "In Progress" time for a day, **When** I normalize their time, **Then** that time remains 3 hours (no scale-up).
+
+7. **Given** a developer who has 10 hours of tracked "In Progress" time for a day (parallel work), **When** I normalize their time, **Then** that time is scaled down proportionally to 7 hours maximum.
 
 **Requirements**:
 
@@ -73,8 +75,9 @@ As a user, I want the tool to correctly handle issues that start or end partway 
 - For issues that started and ended the same day, system MUST credit the actual duration.
 - For issues that only started on a given day, system MUST credit time from start until 4pm.
 - For issues that only ended on a given day, system MUST credit time from 8am until end.
-- System MUST normalize each developer's daily total to 8 hours by scaling proportionally.
-- System MUST scale up if a developer's tracked time is less than 8 hours (assume full workday).
+- System MUST normalize each developer's daily total to 7 hours maximum (assuming no one works at 100% capacity).
+- System MUST only scale down, never up: if tracked time > 7h, scale to 7h; if tracked time <= 7h, keep raw hours.
+- Workday boundaries (8am-4pm) remain unchanged for raw time calculation.
 
 ---
 

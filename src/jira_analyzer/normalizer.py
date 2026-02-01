@@ -6,19 +6,19 @@ from datetime import date
 from jira_analyzer.models import Issue, NormalizedTimeEntry, RawTimeEntry
 
 
-WORKDAY_HOURS = 8.0
+MAX_NORMALIZED_HOURS = 7.0  # Assume no one works at 100% capacity
 
 
 def normalize_time_entries(
     raw_entries: list[RawTimeEntry],
     issues: list[Issue],
 ) -> list[NormalizedTimeEntry]:
-    """Normalize raw time entries to 8 hours per developer per day.
+    """Normalize raw time entries to max 7 hours per developer per day.
 
     For each developer on each day:
     - Sum their raw hours across all issues
-    - Scale proportionally so total = 8 hours
-    - If total < 8 hours, scale UP to assume full workday
+    - If total > 7 hours, scale DOWN proportionally to 7 hours
+    - If total <= 7 hours, keep raw hours (no scale-up)
 
     Args:
         raw_entries: List of raw time entries (assigned only, not unassigned)
@@ -45,9 +45,11 @@ def normalize_time_entries(
         if total_raw <= 0:
             continue
 
-        # Calculate scaling factor to normalize to 8 hours
-        # This handles both scale-up (if < 8h) and scale-down (if > 8h)
-        scale_factor = WORKDAY_HOURS / total_raw
+        # Only scale down if exceeds max, never scale up
+        if total_raw > MAX_NORMALIZED_HOURS:
+            scale_factor = MAX_NORMALIZED_HOURS / total_raw
+        else:
+            scale_factor = 1.0  # Keep raw hours
 
         for entry in entries:
             issue = issue_lookup.get(entry.issue_key)
