@@ -24,37 +24,41 @@ def create_progress() -> Progress:
 
 
 def print_table_report(result: AnalysisResult, show_incomplete: bool = False) -> None:
-    """Print the analysis result as a formatted table."""
+    """Print the issue allocation summary as a formatted table."""
     # Header
     console.print()
-    console.rule(f"[bold]Time Allocation Report[/bold]")
+    console.rule(f"[bold]Issue Allocation Summary[/bold]")
     console.print(f"[dim]{result.start_date} to {result.end_date}[/dim]", justify="center")
     console.print()
 
     # Main results table
     if result.entries:
-        # Aggregate by issue for cleaner display
-        aggregated = _aggregate_for_display(result.entries)
+        # Aggregate by issue (sum across all developers)
+        aggregated = _aggregate_by_issue(result.entries)
+        total_hours = sum(e["hours"] for e in aggregated)
 
         table = Table(show_header=True, header_style="bold")
         table.add_column("Issue", style="cyan", no_wrap=True)
         table.add_column("Title", max_width=30)
         table.add_column("Type", style="dim")
         table.add_column("Epic", style="dim")
-        table.add_column("Developer", style="green")
-        table.add_column("Hours", justify="right", style="bold")
+        table.add_column("Hours", justify="right")
+        table.add_column("%", justify="right", style="bold")
 
         for entry in aggregated:
-            # Style "Unassigned" developer differently
-            developer_style = "yellow" if entry["developer"] == "Unassigned" else "green"
+            pct = 100 * entry["hours"] / total_hours if total_hours > 0 else 0.0
             table.add_row(
                 entry["issue_key"],
                 _truncate(entry["issue_title"], 30),
                 entry["issue_type"],
                 entry["epic_key"] or "—",
-                f"[{developer_style}]{entry['developer']}[/{developer_style}]",
                 f"{entry['hours']:.1f}",
+                f"{pct:.1f}%",
             )
+
+        # Total row
+        table.add_section()
+        table.add_row("", "[bold]TOTAL[/bold]", "", "", f"[bold]{total_hours:.1f}[/bold]", "[bold]100.0%[/bold]")
 
         console.print(table)
 
@@ -101,29 +105,26 @@ def print_summary(result: AnalysisResult, show_incomplete: bool = False) -> None
     console.print()
 
 
-def _aggregate_for_display(
+def _aggregate_by_issue(
     entries: list[NormalizedTimeEntry],
 ) -> list[dict]:
-    """Aggregate entries by issue+developer for display."""
-    from collections import defaultdict
-
-    grouped: dict[tuple[str, str], dict] = {}
+    """Aggregate entries by issue (sum across all developers), sorted by hours descending."""
+    grouped: dict[str, dict] = {}
 
     for entry in entries:
-        key = (entry.issue_key, entry.developer)
+        key = entry.issue_key
         if key not in grouped:
             grouped[key] = {
                 "issue_key": entry.issue_key,
                 "issue_title": entry.issue_title,
                 "issue_type": entry.issue_type,
                 "epic_key": entry.epic_key,
-                "developer": entry.developer,
                 "hours": 0.0,
             }
         grouped[key]["hours"] += entry.normalized_hours
 
-    # Sort by issue key
-    return sorted(grouped.values(), key=lambda x: x["issue_key"])
+    # Sort by hours descending
+    return sorted(grouped.values(), key=lambda x: -x["hours"])
 
 
 def _truncate(text: str, max_len: int) -> str:

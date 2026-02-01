@@ -102,19 +102,19 @@ Issues without assignee: 2 (4.3%)
 
 ```
 ═══════════════════════════════════════════════════════════════════════════════
-                        Time Allocation Report
+                        Issue Allocation Summary
                      2026-01-01 to 2026-01-14
 ═══════════════════════════════════════════════════════════════════════════════
 
-Issue      Title                    Type    Epic         Developer    Hours
+Issue      Title                    Type    Epic         Hours      %
 ────────────────────────────────────────────────────────────────────────────────
-PROJ-101   Fix login bug            Bug     PROJ-50      Alice        12.5
-PROJ-102   Add user profile         Story   PROJ-51      Alice         8.0
-PROJ-103   Refactor auth module     Task    PROJ-50      Bob          16.0
-PROJ-104   Update dependencies      Task    —            Bob           4.0
-PROJ-199   Legacy cleanup           Task    —            Unassigned    8.0
-PROJ-200   Spike: new framework     Spike   —            Unassigned    4.0
+PROJ-103   Refactor auth module     Task    PROJ-50       16.0   20.0%
+PROJ-101   Fix login bug            Bug     PROJ-50       12.5   15.6%
+PROJ-199   Legacy cleanup           Task    —              8.0   10.0%
+PROJ-102   Add user profile         Story   PROJ-51        8.0   10.0%
 ...
+────────────────────────────────────────────────────────────────────────────────
+           TOTAL                                          80.0  100.0%
 
 ═══════════════════════════════════════════════════════════════════════════════
                               Summary
