@@ -5,10 +5,11 @@ CLI tool to estimate time allocation from JIRA issues based on status transition
 ## Features
 
 - Analyze issues matching any JQL query within a timeframe
-- Calculate normalized time per developer per day (8-hour workday)
+- Calculate normalized time per developer per day (max 7 hours, only scales down)
 - Handle partial days, weekends, and parallel work
 - Developer attribution from changelog history
-- Epic aggregation view
+- Epic aggregation view (default) or detailed per-issue breakdown
+- Local caching with 24-hour expiry to avoid redundant API calls
 - CSV export for further analysis
 
 ## Installation
@@ -51,18 +52,32 @@ You'll be prompted for:
 ### 2. Analyze
 
 ```bash
-# Basic analysis
+# Basic analysis (epic aggregation by default)
 jira-analyzer analyze \
   --jql 'project = MYPROJ AND sprint = "Sprint 23"' \
   --from 2026-01-01 \
   --to 2026-01-14
 
-# Aggregate by epic
+# Detailed per-issue breakdown
 jira-analyzer analyze \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
-  --by-epic
+  --by-issue
+
+# Force fresh data (bypass cache)
+jira-analyzer analyze \
+  --jql 'project = MYPROJ' \
+  --from 2026-01-01 \
+  --to 2026-01-31 \
+  --no-cache
+
+# Show issues with incomplete data
+jira-analyzer analyze \
+  --jql 'project = MYPROJ' \
+  --from 2026-01-01 \
+  --to 2026-01-31 \
+  --show-incomplete
 
 # Export to CSV
 jira-analyzer analyze \
@@ -131,7 +146,8 @@ src/jira_analyzer/
 ├── models.py           # Data models
 ├── jira_client.py      # JIRA API client with retry
 ├── time_calculator.py  # Raw time calculation
-├── normalizer.py       # 8h/day normalization
+├── normalizer.py       # 7h/day max normalization (scale down only)
+├── cache.py            # Local caching with 24h expiry
 ├── output.py           # Table/CSV formatting
 ```
 
@@ -200,17 +216,19 @@ cat specs/001-sprint-allocation/tasks.md
 ## Current Status
 
 **MVP Complete** (Phase 1-3):
-- [x] Core analysis with normalized time
-- [x] Partial day handling
-- [x] Developer attribution
-- [x] Epic aggregation
-- [x] CSV export
+- [x] Core analysis with normalized time (max 7h/day, scale down only)
+- [x] Partial day handling (8am-4pm workday boundaries)
+- [x] Developer attribution from changelog history
+- [x] Epic aggregation (default view)
+- [x] Per-issue breakdown (`--by-issue`)
+- [x] CSV export with raw and normalized hours
 - [x] Configuration management
+- [x] Local caching with 24h expiry (`--no-cache` to bypass)
+- [x] Incomplete issue reporting (`--show-incomplete`)
 
 **Remaining** (Phase 4-7):
-- [ ] Additional error handling polish
 - [ ] Unit and integration tests
-- [ ] Documentation updates
+- [ ] Additional error handling polish
 
 See `specs/001-sprint-allocation/tasks.md` for full task list.
 
