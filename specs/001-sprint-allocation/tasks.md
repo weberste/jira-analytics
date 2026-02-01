@@ -50,9 +50,9 @@
 
 ## Phase 3: Core Analysis - User Stories 1, 2, 3 Combined (Priority: P1) 🎯 MVP
 
-**Goal**: Implement the `analyze` command that calculates normalized time per issue per developer
+**Goal**: Implement the `utilization` command that calculates normalized time per issue per developer
 
-**Independent Test**: Run `jira-analyzer analyze --jql "project=TEST" --from 2026-01-01 --to 2026-01-14` and verify table output with normalized hours
+**Independent Test**: Run `jira-analyzer utilization --jql "project=TEST" --from 2026-01-01 --to 2026-01-14` and verify table output with normalized hours
 
 ### US2: Time Calculation with Partial Day Boundaries
 
@@ -81,11 +81,11 @@
 
 ### CLI Integration
 
-- [ ] T032 [US1] Implement `analyze` command with --jql, --from, --to arguments in src/jira_analyzer/cli.py
-- [ ] T033 [US1] Wire up analyze command: config → jira_client → time_calculator → normalizer → output in src/jira_analyzer/cli.py
+- [ ] T032 [US1] Implement `utilization` command with --jql, --from, --to arguments in src/jira_analyzer/cli.py
+- [ ] T033 [US1] Wire up utilization command: config → jira_client → time_calculator → normalizer → output in src/jira_analyzer/cli.py
 - [ ] T034 [US1] Implement proper exit codes (0=success, 1=config error, 2=invalid args, 3=API error, 4=no data) in src/jira_analyzer/cli.py
 
-**Checkpoint**: MVP complete - `jira-analyzer analyze` produces normalized time report in table format
+**Checkpoint**: MVP complete - `jira-analyzer utilization` produces normalized time report in table format
 
 ---
 
@@ -93,13 +93,13 @@
 
 **Goal**: Add `--by-epic` flag to aggregate results by parent epic
 
-**Independent Test**: Run `jira-analyzer analyze --jql "project=TEST" --from 2026-01-01 --to 2026-01-14 --by-epic` and verify epic summary table
+**Independent Test**: Run `jira-analyzer utilization --jql "project=TEST" --from 2026-01-01 --to 2026-01-14 --by-epic` and verify epic summary table
 
 - [ ] T035 [US4] Implement epic aggregation logic in src/jira_analyzer/aggregator.py
 - [ ] T036 [US4] Implement "No Epic" grouping for issues without parent epic in src/jira_analyzer/aggregator.py
 - [ ] T037 [US4] Implement percentage calculation per epic in src/jira_analyzer/aggregator.py
 - [ ] T038 [US4] Implement epic summary table formatter in src/jira_analyzer/output.py
-- [ ] T039 [US4] Add --by-epic flag to analyze command in src/jira_analyzer/cli.py
+- [ ] T039 [US4] Add --by-epic flag to utilization command in src/jira_analyzer/cli.py
 - [ ] T040 [US4] Wire up epic aggregation when --by-epic is passed in src/jira_analyzer/cli.py
 
 **Checkpoint**: Epic aggregation works - `--by-epic` shows hours and percentages per epic
@@ -110,10 +110,10 @@
 
 **Goal**: Add `--output csv` and `--output-file` options for CSV export
 
-**Independent Test**: Run `jira-analyzer analyze --jql "project=TEST" --from 2026-01-01 --to 2026-01-14 --output csv --output-file out.csv` and verify CSV file
+**Independent Test**: Run `jira-analyzer utilization --jql "project=TEST" --from 2026-01-01 --to 2026-01-14 --output csv --output-file out.csv` and verify CSV file
 
 - [ ] T041 [US5] Implement CSV formatter for NormalizedTimeEntry list in src/jira_analyzer/output.py
-- [ ] T042 [US5] Add --output (table/csv) and --output-file arguments to analyze command in src/jira_analyzer/cli.py
+- [ ] T042 [US5] Add --output (table/csv) and --output-file arguments to utilization command in src/jira_analyzer/cli.py
 - [ ] T043 [US5] Wire up CSV output when --output csv is passed in src/jira_analyzer/cli.py
 
 **Checkpoint**: CSV export works - file contains all required columns per spec
@@ -255,7 +255,7 @@ T048 through T053 ─────────→ All parallel
 |-------|-------|---------|
 | Phase 1: Setup | T001-T005 | Project structure |
 | Phase 2: Foundational | T006-T015 | Config, models, JIRA client |
-| Phase 3: Core Analysis | T016-T034 | MVP - analyze command |
+| Phase 3: Core Analysis | T016-T034 | MVP - utilization command |
 | Phase 4: Epic Aggregation | T035-T040 | --by-epic feature |
 | Phase 5: CSV Export | T041-T043 | --output csv feature |
 | Phase 6: Config Commands | T044-T047 | config init/show/set |

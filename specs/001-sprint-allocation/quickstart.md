@@ -54,7 +54,7 @@ This creates `~/.jira-analyzer/config.toml`.
 ### Analyze a Sprint
 
 ```bash
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ AND sprint = "Sprint 23"' \
   --from 2026-01-01 \
   --to 2026-01-14
@@ -63,7 +63,7 @@ jira-analyzer analyze \
 ### Analyze by Date Range
 
 ```bash
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31
@@ -74,7 +74,7 @@ jira-analyzer analyze \
 Epic aggregation is the default view. Use `--by-issue` for detailed per-issue breakdown:
 
 ```bash
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
@@ -84,7 +84,7 @@ jira-analyzer analyze \
 ### Export to CSV
 
 ```bash
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
@@ -97,7 +97,7 @@ jira-analyzer analyze \
 Results are cached for 24 hours. To force a fresh fetch:
 
 ```bash
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
@@ -109,7 +109,7 @@ jira-analyzer analyze \
 To see which issues had no time tracked or no assignee:
 
 ```bash
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
@@ -193,5 +193,5 @@ The tool automatically retries with exponential backoff. If you see repeated rat
 ## Next Steps
 
 - Explore `jira-analyzer --help` for all options
-- Check `jira-analyzer analyze --help` for analysis-specific options
+- Check `jira-analyzer utilization --help` for analysis-specific options
 - Review [CLI Interface](./contracts/cli-interface.md) for full command reference

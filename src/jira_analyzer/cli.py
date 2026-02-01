@@ -57,7 +57,7 @@ def parse_date(date_str: str) -> date:
 
 
 @app.command()
-def analyze(
+def utilization(
     jql: Annotated[str, typer.Option("--jql", "-q", help="JQL query to select issues")],
     from_date: Annotated[str, typer.Option("--from", "-f", help="Start date (YYYY-MM-DD)")],
     to_date: Annotated[str, typer.Option("--to", "-t", help="End date (YYYY-MM-DD)")],

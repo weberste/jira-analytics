@@ -9,21 +9,21 @@
 jira-analyzer <command> [options]
 
 Commands:
-  analyze     Analyze time allocation for issues matching a JQL query
+  utilization Analyze time allocation for issues matching a JQL query
   config      Manage configuration (init, show, set)
   version     Show version information
 ```
 
 ---
 
-## `jira-analyzer analyze`
+## `jira-analyzer utilization`
 
 Main command to analyze time allocation.
 
 ### Usage
 
 ```bash
-jira-analyzer analyze --jql <query> --from <date> --to <date> [options]
+jira-analyzer utilization --jql <query> --from <date> --to <date> [options]
 ```
 
 ### Required Arguments
@@ -48,20 +48,20 @@ jira-analyzer analyze --jql <query> --from <date> --to <date> [options]
 
 ```bash
 # Basic analysis for a sprint (shows epic aggregation by default)
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ AND sprint = "Sprint 23"' \
   --from 2026-01-01 \
   --to 2026-01-14
 
 # Detailed per-issue breakdown
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
   --by-issue
 
 # Export to CSV
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \

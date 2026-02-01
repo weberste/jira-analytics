@@ -53,34 +53,34 @@ You'll be prompted for:
 
 ```bash
 # Basic analysis (epic aggregation by default)
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ AND sprint = "Sprint 23"' \
   --from 2026-01-01 \
   --to 2026-01-14
 
 # Detailed per-issue breakdown
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
   --by-issue
 
 # Force fresh data (bypass cache)
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
   --no-cache
 
 # Show issues with incomplete data
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
   --show-incomplete
 
 # Export to CSV
-jira-analyzer analyze \
+jira-analyzer utilization \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
@@ -115,7 +115,7 @@ After editing code, changes are immediately available (editable install):
 ```bash
 # Edit any file in src/jira_analyzer/
 # Then just run:
-jira-analyzer analyze --jql "..." --from ... --to ...
+jira-analyzer utilization --jql "..." --from ... --to ...
 ```
 
 No reinstall needed — `pip install -e .` creates a link to your source.
