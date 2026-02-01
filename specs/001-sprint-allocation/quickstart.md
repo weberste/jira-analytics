@@ -69,14 +69,16 @@ jira-analyzer analyze \
   --to 2026-01-31
 ```
 
-### View by Epic
+### View by Issue (detailed breakdown)
+
+Epic aggregation is the default view. Use `--by-issue` for detailed per-issue breakdown:
 
 ```bash
 jira-analyzer analyze \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
-  --by-epic
+  --by-issue
 ```
 
 ### Export to CSV
@@ -90,6 +92,30 @@ jira-analyzer analyze \
   --output-file allocation.csv
 ```
 
+### Force Fresh Data (bypass cache)
+
+Results are cached for 24 hours. To force a fresh fetch:
+
+```bash
+jira-analyzer analyze \
+  --jql 'project = MYPROJ' \
+  --from 2026-01-01 \
+  --to 2026-01-31 \
+  --no-cache
+```
+
+### Show Incomplete Issues
+
+To see which issues had no time tracked or no assignee:
+
+```bash
+jira-analyzer analyze \
+  --jql 'project = MYPROJ' \
+  --from 2026-01-01 \
+  --to 2026-01-31 \
+  --show-incomplete
+```
+
 ## Understanding the Output
 
 ### Time Calculation
@@ -101,12 +127,15 @@ The tool calculates time based on how long issues were in "active" statuses (def
    - Partial day = actual hours (8am-4pm workday assumed)
 
 2. **Normalized time**: Adjusted to account for parallel work
-   - If a developer worked on 3 issues totaling 12 raw hours, each is scaled proportionally to sum to 8 hours
-   - This prevents over-counting when someone works on multiple issues
+   - Only scales **down**, never up (assumes untracked time = other work)
+   - Maximum 7 hours per developer per day (no one works at 100% capacity)
+   - If a developer worked on 3 issues totaling 10 raw hours, each is scaled proportionally to sum to 7 hours
+   - If tracked time <= 7 hours, raw hours are kept as-is
 
 ### Data Quality
 
-- **Unassigned issues**: Reported separately (not normalized)
+- **Unassigned issues**: Shown in main table with "Unassigned" as developer
+- **Issues with no time**: Use `--show-incomplete` to list issue keys
 - **Missing history**: Issues without status transitions are excluded
 
 ## Common JQL Queries
