@@ -226,6 +226,7 @@ def _output_csv(result: AnalysisResult, output_file: Optional[str]) -> None:
             "epic_title",
             "developer",
             "date",
+            "raw_hours",
             "normalized_hours",
         ])
 
@@ -239,6 +240,7 @@ def _output_csv(result: AnalysisResult, output_file: Optional[str]) -> None:
                 entry.epic_title or "",
                 entry.developer,
                 entry.date.isoformat(),
+                f"{entry.raw_hours:.2f}",
                 f"{entry.normalized_hours:.2f}",
             ])
 

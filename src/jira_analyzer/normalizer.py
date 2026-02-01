@@ -65,6 +65,7 @@ def normalize_time_entries(
                     epic_title=issue.epic_title,
                     developer=developer,
                     date=day,
+                    raw_hours=round(entry.raw_hours, 2),
                     normalized_hours=round(normalized_hours, 2),
                 )
             )
@@ -91,7 +92,8 @@ def aggregate_by_issue(entries: list[NormalizedTimeEntry]) -> list[NormalizedTim
     for (issue_key, developer), group in by_issue_dev.items():
         # Use first entry as template
         template = group[0]
-        total_hours = sum(e.normalized_hours for e in group)
+        total_raw = sum(e.raw_hours for e in group)
+        total_normalized = sum(e.normalized_hours for e in group)
 
         aggregated.append(
             NormalizedTimeEntry(
@@ -102,7 +104,8 @@ def aggregate_by_issue(entries: list[NormalizedTimeEntry]) -> list[NormalizedTim
                 epic_title=template.epic_title,
                 developer=developer,
                 date=min(e.date for e in group),  # Use earliest date
-                normalized_hours=round(total_hours, 2),
+                raw_hours=round(total_raw, 2),
+                normalized_hours=round(total_normalized, 2),
             )
         )
 

@@ -61,6 +61,7 @@ class NormalizedTimeEntry:
     epic_title: str | None
     developer: str
     date: date
+    raw_hours: float
     normalized_hours: float
 
 
