@@ -85,7 +85,7 @@ class JiraClient:
             if self.config.developer_field:
                 fields = f"{fields},{self.config.developer_field}"
 
-            result = client.search_issues(
+            result = client.enhanced_search_issues(
                 jql,
                 maxResults=max_results,
                 startAt=start_at,
