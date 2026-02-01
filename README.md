@@ -145,12 +145,12 @@ Design documents are in `specs/001-sprint-allocation/`:
 
 | File | Purpose |
 |------|---------|
-| `spec.md` | Feature specification (requirements, user stories) |
-| `plan.md` | Implementation plan (tech stack, architecture) |
-| `tasks.md` | Task breakdown with dependencies |
-| `data-model.md` | Entity definitions |
-| `contracts/` | CLI interface contract |
-| `quickstart.md` | Usage guide |
+| `spec.md` | [Feature specification](specs/001-sprint-allocation/spec.md) (requirements, user stories) |
+| `plan.md` | [Implementation plan](specs/001-sprint-allocation/plan.md) (tech stack, architecture) |
+| `tasks.md` | [Task breakdown](specs/001-sprint-allocation/tasks.md) with dependencies |
+| `data-model.md` | [Entity definitions](specs/001-sprint-allocation/data-model.md) |
+| `contracts/` | [CLI interface contract](specs/001-sprint-allocation/contracts/cli-interface.md) |
+| `quickstart.md` | [Usage guide](specs/001-sprint-allocation/quickstart.md) |
 
 ### Continue Development
 
