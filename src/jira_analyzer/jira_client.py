@@ -144,7 +144,8 @@ class JiraClient:
             if progress_callback:
                 progress_callback(len(all_issues), total)
 
-            if len(all_issues) >= total:
+            # Stop if we received fewer than requested (last page) or reached total
+            if len(issues) < page_size or len(all_issues) >= total:
                 break
 
             start_at += page_size
