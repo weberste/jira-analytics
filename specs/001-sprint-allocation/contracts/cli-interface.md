@@ -38,7 +38,7 @@ jira-analyzer analyze --jql <query> --from <date> --to <date> [options]
 
 | Argument | Type | Default | Description |
 |----------|------|---------|-------------|
-| `--by-epic` | flag | false | Aggregate results by parent epic |
+| `--by-issue` | flag | false | Show detailed per-issue breakdown (default is epic aggregation) |
 | `--output`, `-o` | string | "table" | Output format: "table" or "csv" |
 | `--output-file` | path | stdout | File path for CSV output |
 | `--show-incomplete` | flag | false | List issue keys with no time spent or no assignee |
@@ -46,18 +46,18 @@ jira-analyzer analyze --jql <query> --from <date> --to <date> [options]
 ### Examples
 
 ```bash
-# Basic analysis for a sprint
+# Basic analysis for a sprint (shows epic aggregation by default)
 jira-analyzer analyze \
   --jql 'project = MYPROJ AND sprint = "Sprint 23"' \
   --from 2026-01-01 \
   --to 2026-01-14
 
-# Analysis with epic aggregation
+# Detailed per-issue breakdown
 jira-analyzer analyze \
   --jql 'project = MYPROJ' \
   --from 2026-01-01 \
   --to 2026-01-31 \
-  --by-epic
+  --by-issue
 
 # Export to CSV
 jira-analyzer analyze \
@@ -68,13 +68,39 @@ jira-analyzer analyze \
   --output-file allocation.csv
 ```
 
-### Output: Table Format (default)
+### Output: Table Format (default - epic aggregation)
 
 ```
 Fetching issues... 47 found
 Retrieving history... [████████████████████] 47/47
 Calculating time...
 
+═══════════════════════════════════════════════════════════════════════════════
+                        Epic Allocation Summary
+                     2026-01-01 to 2026-01-14
+═══════════════════════════════════════════════════════════════════════════════
+
+Epic         Title                         Hours      %
+────────────────────────────────────────────────────────────────────────────────
+PROJ-50      Authentication Improvements    28.5    35.6%
+PROJ-51      User Profile Feature           24.0    30.0%
+PROJ-52      Performance Optimization       16.0    20.0%
+—            No Epic                        11.5    14.4%
+────────────────────────────────────────────────────────────────────────────────
+             TOTAL                          80.0   100.0%
+
+═══════════════════════════════════════════════════════════════════════════════
+                              Summary
+═══════════════════════════════════════════════════════════════════════════════
+Total issues analyzed: 47
+Issues with time spent: 45 (95.7%)
+Issues with no time spent: 2 (4.3%)
+Issues without assignee: 2 (4.3%)
+```
+
+### Output: Table Format with `--by-issue`
+
+```
 ═══════════════════════════════════════════════════════════════════════════════
                         Time Allocation Report
                      2026-01-01 to 2026-01-14
@@ -99,9 +125,9 @@ Issues with no time spent: 2 (4.3%)
 Issues without assignee: 2 (4.3%)
 ```
 
-### Output: Table Format with `--show-incomplete`
+### Output: with `--show-incomplete`
 
-When `--show-incomplete` is passed, issue keys are listed after the summary:
+When `--show-incomplete` is passed, issue keys are listed after the summary (works with both default and `--by-issue`):
 
 ```
 ═══════════════════════════════════════════════════════════════════════════════
@@ -117,24 +143,6 @@ Issues with no time spent:
 
 Issues without assignee:
   PROJ-199, PROJ-200
-```
-
-### Output: Table Format with `--by-epic`
-
-```
-═══════════════════════════════════════════════════════════════════════════════
-                        Epic Allocation Summary
-                     2026-01-01 to 2026-01-14
-═══════════════════════════════════════════════════════════════════════════════
-
-Epic         Title                         Hours      %
-────────────────────────────────────────────────────────────────────────────────
-PROJ-50      Authentication Improvements    28.5    35.6%
-PROJ-51      User Profile Feature           24.0    30.0%
-PROJ-52      Performance Optimization       16.0    20.0%
-—            No Epic                        11.5    14.4%
-────────────────────────────────────────────────────────────────────────────────
-             TOTAL                          80.0   100.0%
 ```
 
 ### Output: CSV Format

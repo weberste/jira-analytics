@@ -59,6 +59,11 @@ def print_table_report(result: AnalysisResult, show_incomplete: bool = False) ->
         console.print(table)
 
     # Summary section
+    print_summary(result, show_incomplete)
+
+
+def print_summary(result: AnalysisResult, show_incomplete: bool = False) -> None:
+    """Print the summary section (used by both issue and epic views)."""
     console.print()
     console.rule("[bold]Summary[/bold]")
     console.print()

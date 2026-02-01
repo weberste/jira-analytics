@@ -26,6 +26,7 @@ from jira_analyzer.output import (
     print_no_activity_message,
     print_no_data_message,
     print_success,
+    print_summary,
     print_table_report,
 )
 from jira_analyzer.time_calculator import calculate_raw_time
@@ -59,7 +60,7 @@ def analyze(
     jql: Annotated[str, typer.Option("--jql", "-q", help="JQL query to select issues")],
     from_date: Annotated[str, typer.Option("--from", "-f", help="Start date (YYYY-MM-DD)")],
     to_date: Annotated[str, typer.Option("--to", "-t", help="End date (YYYY-MM-DD)")],
-    by_epic: Annotated[bool, typer.Option("--by-epic", help="Aggregate results by epic")] = False,
+    by_issue: Annotated[bool, typer.Option("--by-issue", help="Show detailed per-issue breakdown (default is epic aggregation)")] = False,
     output: Annotated[str, typer.Option("--output", "-o", help="Output format: table or csv")] = "table",
     output_file: Annotated[Optional[str], typer.Option("--output-file", help="File path for CSV output")] = None,
     show_incomplete: Annotated[bool, typer.Option("--show-incomplete", help="List issue keys with no time or no assignee")] = False,
@@ -178,10 +179,10 @@ def analyze(
     if output == "csv":
         _output_csv(result, output_file)
     else:
-        if by_epic:
-            _print_epic_summary(result)
-        else:
+        if by_issue:
             print_table_report(result, show_incomplete=show_incomplete)
+        else:
+            _print_epic_summary(result, show_incomplete=show_incomplete)
 
 
 def _output_csv(result: AnalysisResult, output_file: Optional[str]) -> None:
@@ -231,7 +232,7 @@ def _output_csv(result: AnalysisResult, output_file: Optional[str]) -> None:
             f.close()
 
 
-def _print_epic_summary(result: AnalysisResult) -> None:
+def _print_epic_summary(result: AnalysisResult, show_incomplete: bool = False) -> None:
     """Print epic aggregation summary."""
     from collections import defaultdict
     from rich.table import Table
@@ -258,7 +259,7 @@ def _print_epic_summary(result: AnalysisResult) -> None:
             "percentage": pct,
         })
 
-    # Print
+    # Print epic table
     console.print()
     console.rule("[bold]Epic Allocation Summary[/bold]")
     console.print(f"[dim]{result.start_date} to {result.end_date}[/dim]", justify="center")
@@ -283,7 +284,9 @@ def _print_epic_summary(result: AnalysisResult) -> None:
     table.add_row("", "[bold]TOTAL[/bold]", f"[bold]{total_hours:.1f}[/bold]", "[bold]100.0%[/bold]")
 
     console.print(table)
-    console.print()
+
+    # Print summary section
+    print_summary(result, show_incomplete)
 
 
 # Config subcommand group

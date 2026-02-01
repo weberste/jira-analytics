@@ -122,19 +122,23 @@ As a user, I want to see a summary aggregated by parent epic showing total hours
 
 **Why this priority**: Epic-level aggregation provides strategic insight but the raw per-issue data (P1) must work first.
 
-**Independent Test**: Can be tested by running with an aggregation flag and verifying output groups time by epic with percentages.
+**Independent Test**: Can be tested by running the analyze command and verifying output groups time by epic with percentages.
 
 **Acceptance Scenarios**:
 
-1. **Given** I run the analyze command with `--by-epic` flag, **When** the analysis completes, **Then** I see total normalized hours and percentage of total time per epic.
+1. **Given** I run the analyze command (default), **When** the analysis completes, **Then** I see total normalized hours and percentage of total time per epic.
 
-2. **Given** issues with no parent epic, **When** I run with `--by-epic`, **Then** those issues are grouped under "No Epic" with their hours and percentage.
+2. **Given** issues with no parent epic, **When** I run the analyze command, **Then** those issues are grouped under "No Epic" with their hours and percentage.
 
 3. **Given** three epics with 40h, 30h, and 10h of normalized time, **When** I view the epic summary, **Then** I see 50%, 37.5%, and 12.5% respectively.
 
+4. **Given** I run the analyze command with `--by-issue` flag, **When** the analysis completes, **Then** I see the detailed per-issue breakdown instead of epic aggregation.
+
 **Requirements**:
 
-- System MUST support aggregation by epic when requested via command flag, showing total normalized hours and percentage of total time per epic.
+- System MUST show aggregation by epic as the default output, showing total normalized hours and percentage of total time per epic.
+- System MUST support `--by-issue` flag to show detailed per-issue breakdown instead of epic aggregation.
+- Both views MUST include the summary section (total issues analyzed, issues with time spent, etc.).
 
 ---
 
