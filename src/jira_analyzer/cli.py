@@ -141,7 +141,8 @@ def analyze(
         print_no_data_message(jql, start_date, end_date)
         raise typer.Exit(EXIT_NO_DATA)
 
-    console.print(f"Found [bold]{len(issues)}[/bold] issues")
+    cache_note = " [dim](using cached data)[/dim]" if from_cache else ""
+    console.print(f"Found [bold]{len(issues)}[/bold] issues{cache_note}")
 
     # Calculate raw time
     with create_progress() as progress:
@@ -242,8 +243,7 @@ def _output_csv(result: AnalysisResult, output_file: Optional[str]) -> None:
             ])
 
         if output_file:
-            cache_note = " (from cache)" if result.from_cache else ""
-            print_success(f"Results written to {output_file}{cache_note}")
+            print_success(f"Results written to {output_file}")
 
     finally:
         if output_file:
