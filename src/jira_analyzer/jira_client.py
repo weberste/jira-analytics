@@ -60,17 +60,17 @@ class JiraClient:
         self,
         jql: str,
         max_results: int = 100,
-        start_at: int = 0,
-    ) -> tuple[list[dict], int]:
-        """Search for issues using JQL with pagination.
+        next_page_token: str | None = None,
+    ) -> tuple[list[dict], str | None]:
+        """Search for issues using JQL with cursor-based pagination.
 
         Args:
             jql: JQL query string
             max_results: Maximum results per page
-            start_at: Starting index for pagination
+            next_page_token: Token for fetching next page (None for first page)
 
         Returns:
-            Tuple of (list of raw issue dicts, total count)
+            Tuple of (list of raw issue dicts, next page token or None if last page)
 
         Raises:
             RateLimitError: If rate limited (will be retried)
@@ -81,22 +81,26 @@ class JiraClient:
 
         try:
             # Build fields list - include developer field if configured
-            fields = "summary,issuetype,parent,assignee,status"
+            fields = ["summary", "issuetype", "parent", "assignee", "status"]
             if self.config.developer_field:
-                fields = f"{fields},{self.config.developer_field}"
+                fields.append(self.config.developer_field)
 
-            result = client.enhanced_search_issues(
-                jql,
-                maxResults=max_results,
-                startAt=start_at,
-                expand="changelog",
-                fields=fields,
-            )
+            # Build kwargs for enhanced_search_issues
+            kwargs = {
+                "jql": jql,
+                "maxResults": max_results,
+                "expand": "changelog",
+                "fields": fields,
+            }
+            if next_page_token:
+                kwargs["nextPageToken"] = next_page_token
 
-            # Access total before iterating over result (ResultList may lose properties after iteration)
-            total_count = result.total
+            result = client.enhanced_search_issues(**kwargs)
+
             issues = [self._issue_to_dict(issue) for issue in result]
-            return issues, total_count
+            # Get next page token from result (None if last page)
+            token = getattr(result, "nextPageToken", None)
+            return issues, token
 
         except JIRAError as e:
             if e.status_code == 429:
@@ -120,7 +124,7 @@ class JiraClient:
         }
 
     def fetch_all_issues(self, jql: str, progress_callback=None) -> list[Issue]:
-        """Fetch all issues matching JQL query with pagination.
+        """Fetch all issues matching JQL query with cursor-based pagination.
 
         Args:
             jql: JQL query string
@@ -130,25 +134,20 @@ class JiraClient:
             List of Issue objects
         """
         all_issues: list[dict] = []
-        start_at = 0
         page_size = 100
-        total = None
+        next_token: str | None = None
 
         while True:
-            issues, total_count = self.search_issues(jql, page_size, start_at)
-            if total is None:
-                total = total_count
-
+            issues, next_token = self.search_issues(jql, page_size, next_token)
             all_issues.extend(issues)
 
             if progress_callback:
-                progress_callback(len(all_issues), total)
+                # Note: enhanced search doesn't provide total count upfront
+                progress_callback(len(all_issues), None)
 
-            # Stop if we received fewer than requested (last page) or reached total
-            if len(issues) < page_size or len(all_issues) >= total:
+            # Stop if no more pages
+            if not next_token or len(issues) < page_size:
                 break
-
-            start_at += page_size
 
         return [self._parse_issue(issue_dict) for issue_dict in all_issues]
 
