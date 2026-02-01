@@ -8,6 +8,7 @@ import typer
 from rich.console import Console
 
 from jira_analyzer import __version__
+from jira_analyzer.cache import get_cached_issues, save_to_cache
 from jira_analyzer.config import (
     Config,
     config_exists,
@@ -64,6 +65,7 @@ def analyze(
     output: Annotated[str, typer.Option("--output", "-o", help="Output format: table or csv")] = "table",
     output_file: Annotated[Optional[str], typer.Option("--output-file", help="File path for CSV output")] = None,
     show_incomplete: Annotated[bool, typer.Option("--show-incomplete", help="List issue keys with no time or no assignee")] = False,
+    no_cache: Annotated[bool, typer.Option("--no-cache", help="Force fresh fetch from JIRA, bypassing cache")] = False,
 ) -> None:
     """Analyze time allocation for issues matching a JQL query."""
     # Validate dates
@@ -91,35 +93,49 @@ def analyze(
         print_error(str(e))
         raise typer.Exit(EXIT_CONFIG_ERROR)
 
-    # Create JIRA client
+    # Check cache first (unless --no-cache)
+    raw_issues = None
+    from_cache = False
+    if not no_cache:
+        raw_issues = get_cached_issues(jql, start_date, end_date)
+        if raw_issues is not None:
+            from_cache = True
+
     client = JiraClient(config)
 
-    # Fetch issues with progress
-    with create_progress() as progress:
-        fetch_task = progress.add_task("Fetching issues...", total=None)
+    if raw_issues is not None:
+        issues = [client._parse_issue(issue_dict) for issue_dict in raw_issues]
+    else:
+        # Fetch from JIRA
+        with create_progress() as progress:
+            fetch_task = progress.add_task("Fetching issues...", total=None)
 
-        try:
-            def on_progress(fetched: int, total: int) -> None:
-                progress.update(fetch_task, completed=fetched, total=total)
+            try:
+                raw_issues = client.search_all_issues(jql)
+                progress.update(fetch_task, completed=len(raw_issues), total=len(raw_issues))
 
-            issues = client.fetch_all_issues(jql, progress_callback=on_progress)
+            except AuthenticationError as e:
+                progress.stop()
+                print_error(str(e))
+                raise typer.Exit(EXIT_API_ERROR)
+            except RateLimitError as e:
+                progress.stop()
+                print_error("JIRA API rate limit exceeded after 3 retries. Try again later.")
+                raise typer.Exit(EXIT_API_ERROR)
+            except ValueError as e:
+                progress.stop()
+                print_error(f"Invalid JQL query: {e}")
+                raise typer.Exit(EXIT_INVALID_ARGS)
+            except Exception as e:
+                progress.stop()
+                print_error(f"JIRA API error: {e}")
+                raise typer.Exit(EXIT_API_ERROR)
 
-        except AuthenticationError as e:
-            progress.stop()
-            print_error(str(e))
-            raise typer.Exit(EXIT_API_ERROR)
-        except RateLimitError as e:
-            progress.stop()
-            print_error("JIRA API rate limit exceeded after 3 retries. Try again later.")
-            raise typer.Exit(EXIT_API_ERROR)
-        except ValueError as e:
-            progress.stop()
-            print_error(f"Invalid JQL query: {e}")
-            raise typer.Exit(EXIT_INVALID_ARGS)
-        except Exception as e:
-            progress.stop()
-            print_error(f"JIRA API error: {e}")
-            raise typer.Exit(EXIT_API_ERROR)
+        # Save to cache
+        if raw_issues:
+            save_to_cache(jql, start_date, end_date, raw_issues)
+
+        issues = [client._parse_issue(issue_dict) for issue_dict in raw_issues]
 
     if not issues:
         print_no_data_message(jql, start_date, end_date)
@@ -173,6 +189,7 @@ def analyze(
         no_time_issue_keys=no_time_issue_keys,
         unassigned_issue_keys=unassigned_issue_keys,
         epic_summaries=None,  # Will be set if --by-epic
+        from_cache=from_cache,
     )
 
     # Handle output
@@ -225,7 +242,8 @@ def _output_csv(result: AnalysisResult, output_file: Optional[str]) -> None:
             ])
 
         if output_file:
-            print_success(f"Results written to {output_file}")
+            cache_note = " (from cache)" if result.from_cache else ""
+            print_success(f"Results written to {output_file}{cache_note}")
 
     finally:
         if output_file:

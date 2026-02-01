@@ -73,6 +73,8 @@ def print_summary(result: AnalysisResult, show_incomplete: bool = False) -> None
     console.print()
 
     console.print(f"Total issues analyzed: [bold]{result.total_issues}[/bold]")
+    if result.from_cache:
+        console.print("[dim](using cached data)[/dim]")
     console.print(
         f"Issues with time spent: [bold]{result.issues_with_time}[/bold] "
         f"({_percent(result.issues_with_time, result.total_issues)})"

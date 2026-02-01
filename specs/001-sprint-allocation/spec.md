@@ -185,6 +185,14 @@ These requirements apply across all user stories.
 - System MUST handle paginated JIRA API responses for large result sets.
 - System MUST handle API rate limits with automatic retry using exponential backoff (up to 3 retries), then fail with clear error if still rate-limited.
 
+**Caching**:
+- System MUST cache JIRA API responses locally to avoid redundant requests.
+- Cache MUST be stored in `~/.jira-analyzer/cache/`.
+- Cache key MUST be based on hash of JQL query + date range.
+- Cache MUST automatically expire after 24 hours and refetch from JIRA.
+- System MUST support `--no-cache` flag to force a fresh fetch, bypassing and updating the cache.
+- System SHOULD display whether results are from cache or freshly fetched.
+
 **Configuration**:
 - System MUST authenticate to JIRA Cloud using API token (user email + API token).
 - System MUST support configurable active statuses (default: "In Progress" only, as it provides the cleanest signal for workflows lacking "Ready for X" states).

@@ -89,3 +89,4 @@ class AnalysisResult:
     no_time_issue_keys: list[str] = field(default_factory=list)
     unassigned_issue_keys: list[str] = field(default_factory=list)
     epic_summaries: list[EpicSummary] | None = None
+    from_cache: bool = False

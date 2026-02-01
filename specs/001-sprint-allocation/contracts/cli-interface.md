@@ -42,6 +42,7 @@ jira-analyzer analyze --jql <query> --from <date> --to <date> [options]
 | `--output`, `-o` | string | "table" | Output format: "table" or "csv" |
 | `--output-file` | path | stdout | File path for CSV output |
 | `--show-incomplete` | flag | false | List issue keys with no time spent or no assignee |
+| `--no-cache` | flag | false | Force fresh fetch from JIRA, bypassing cache |
 
 ### Examples
 
