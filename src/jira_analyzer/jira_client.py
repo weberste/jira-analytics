@@ -80,27 +80,23 @@ class JiraClient:
         client = self._get_client()
 
         try:
+            # Build fields list - include developer field if configured
+            fields = "summary,issuetype,parent,assignee,status"
+            if self.config.developer_field:
+                fields = f"{fields},{self.config.developer_field}"
+
             result = client.search_issues(
                 jql,
                 maxResults=max_results,
                 startAt=start_at,
                 expand="changelog",
-                fields="summary,issuetype,parent,assignee,status",
+                fields=fields,
             )
-            # Add custom developer field if configured
-            if self.config.developer_field:
-                # Re-fetch with developer field
-                fields = f"summary,issuetype,parent,assignee,status,{self.config.developer_field}"
-                result = client.search_issues(
-                    jql,
-                    maxResults=max_results,
-                    startAt=start_at,
-                    expand="changelog",
-                    fields=fields,
-                )
 
+            # Access total before iterating over result (ResultList may lose properties after iteration)
+            total_count = result.total
             issues = [self._issue_to_dict(issue) for issue in result]
-            return issues, result.total
+            return issues, total_count
 
         except JIRAError as e:
             if e.status_code == 429:
