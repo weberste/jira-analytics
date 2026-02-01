@@ -82,9 +82,10 @@ class AnalysisResult:
     start_date: date
     end_date: date
     total_issues: int
-    issues_with_data: int
+    issues_with_time: int
+    issues_with_no_time: int
     unassigned_issues: int
-    unassigned_percentage: float
     entries: list[NormalizedTimeEntry]
-    unassigned_entries: list[RawTimeEntry] = field(default_factory=list)
+    no_time_issue_keys: list[str] = field(default_factory=list)
+    unassigned_issue_keys: list[str] = field(default_factory=list)
     epic_summaries: list[EpicSummary] | None = None

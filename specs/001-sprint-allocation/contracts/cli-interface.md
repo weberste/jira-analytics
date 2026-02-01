@@ -41,6 +41,7 @@ jira-analyzer analyze --jql <query> --from <date> --to <date> [options]
 | `--by-epic` | flag | false | Aggregate results by parent epic |
 | `--output`, `-o` | string | "table" | Output format: "table" or "csv" |
 | `--output-file` | path | stdout | File path for CSV output |
+| `--show-incomplete` | flag | false | List issue keys with no time spent or no assignee |
 
 ### Examples
 
@@ -85,20 +86,37 @@ PROJ-101   Fix login bug            Bug     PROJ-50      Alice        12.5
 PROJ-102   Add user profile         Story   PROJ-51      Alice         8.0
 PROJ-103   Refactor auth module     Task    PROJ-50      Bob          16.0
 PROJ-104   Update dependencies      Task    —            Bob           4.0
+PROJ-199   Legacy cleanup           Task    —            Unassigned    8.0
+PROJ-200   Spike: new framework     Spike   —            Unassigned    4.0
 ...
 
 ═══════════════════════════════════════════════════════════════════════════════
                               Summary
 ═══════════════════════════════════════════════════════════════════════════════
 Total issues analyzed: 47
-Issues with complete data: 45 (95.7%)
-Unassigned issues: 2 (4.3%) — reported separately below
+Issues with time spent: 45 (95.7%)
+Issues with no time spent: 2 (4.3%)
+Issues without assignee: 2 (4.3%)
+```
 
-───────────────────────────────────────────────────────────────────────────────
-                        Unassigned Issues (Raw Time)
-───────────────────────────────────────────────────────────────────────────────
-PROJ-199   Legacy cleanup           Task    —            8.0h raw
-PROJ-200   Spike: new framework     Spike   —            4.0h raw
+### Output: Table Format with `--show-incomplete`
+
+When `--show-incomplete` is passed, issue keys are listed after the summary:
+
+```
+═══════════════════════════════════════════════════════════════════════════════
+                              Summary
+═══════════════════════════════════════════════════════════════════════════════
+Total issues analyzed: 47
+Issues with time spent: 45 (95.7%)
+Issues with no time spent: 2 (4.3%)
+Issues without assignee: 2 (4.3%)
+
+Issues with no time spent:
+  PROJ-205, PROJ-210
+
+Issues without assignee:
+  PROJ-199, PROJ-200
 ```
 
 ### Output: Table Format with `--by-epic`

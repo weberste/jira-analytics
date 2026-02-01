@@ -145,11 +145,12 @@ class AnalysisResult:
     start_date: date
     end_date: date
     total_issues: int
-    issues_with_data: int
-    unassigned_issues: int
-    unassigned_percentage: float
-    entries: list[NormalizedTimeEntry]
-    unassigned_entries: list[RawTimeEntry]  # Reported separately
+    issues_with_time: int          # Issues that had activity in active status
+    issues_with_no_time: int       # Issues with no activity in timeframe
+    unassigned_issues: int         # Issues where developer couldn't be determined
+    entries: list[NormalizedTimeEntry]  # Includes "Unassigned" entries
+    no_time_issue_keys: list[str]  # For --show-no-time flag
+    unassigned_issue_keys: list[str]  # For --show-no-time flag
     epic_summaries: list[EpicSummary] | None  # If --by-epic requested
 ```
 
@@ -207,7 +208,7 @@ EpicSummary (N) ──── aggregated from ──── NormalizedTimeEntry (N
 4. Check current Assignee
    └── Found? → Use that assignee
 
-5. Mark as "Unassigned" → Exclude from normalization
+5. Mark as "Unassigned" → Include in output with developer="Unassigned"
 ```
 
 ---

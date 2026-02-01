@@ -94,7 +94,7 @@ As a user, I want the tool to correctly identify which developer worked on an is
 
 3. **Given** an issue that was reassigned from Alice to Bob while "In Progress", **When** I extract time data, **Then** time is split between Alice and Bob based on when each was assigned.
 
-4. **Given** an issue with no Developer field and no assignee during "In Progress" time, **When** I extract time data, **Then** the developer is marked as "Unassigned", excluded from normalization, and reported separately.
+4. **Given** an issue with no Developer field and no assignee during "In Progress" time, **When** I extract time data, **Then** the developer is marked as "Unassigned" and included in the main output table (not excluded from normalization).
 
 5. **Given** an issue that was unassigned during "In Progress" but later had a Developer field set, **When** I rerun the analysis, **Then** the current Developer value is used and the issue is included in normalization (enabling retroactive data cleanup).
 
@@ -107,8 +107,12 @@ As a user, I want the tool to correctly identify which developer worked on an is
   4. Current assignee value (allows retroactive data cleanup)
   5. If none available → "Unassigned"
 - If an issue was reassigned during "In Progress" status, system MUST split time between developers based on assignment timestamps.
-- Unassigned issues MUST be excluded from per-developer normalization and reported separately with raw (unnormalized) time.
-- System MUST report a data quality metric showing the percentage of issues that were unassigned.
+- Unassigned issues MUST be included in the main output with "Unassigned" as the developer name (normalized along with other entries).
+- System MUST report summary metrics showing:
+  - "Issues with time spent": count of issues that had activity in active status during timeframe
+  - "Issues with no time spent": count of issues that had no activity in active status during timeframe
+  - "Issues without assignee": count of issues where developer could not be determined
+- System MUST support a `--show-incomplete` flag that lists the issue keys for both "issues with no time spent" and "issues without assignee".
 
 ---
 
@@ -161,7 +165,7 @@ As a user, I want to export the raw per-issue data to CSV, so I can perform my o
 - What happens when the JQL query is invalid? Display JIRA's error message with guidance on query syntax.
 - What happens when issues lack status transition history? Report those issues as having incomplete data and exclude from calculations.
 - What happens on weekends? Do not count weekend days in the analysis (assume no work on Saturday/Sunday).
-- What happens if an issue has no Developer field AND no assignee (historical or current)? Attribute to "Unassigned", exclude from normalization, report separately with raw time as a data quality issue.
+- What happens if an issue has no Developer field AND no assignee (historical or current)? Attribute to "Unassigned" and include in main output. Use `--show-incomplete` to list these issues.
 - What happens if status transition timestamps are in a different timezone? Normalize all times to a consistent timezone (configurable or default to local).
 
 ---

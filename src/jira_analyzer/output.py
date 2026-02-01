@@ -6,7 +6,7 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 from rich.table import Table
 
-from jira_analyzer.models import AnalysisResult, NormalizedTimeEntry, RawTimeEntry
+from jira_analyzer.models import AnalysisResult, NormalizedTimeEntry
 
 
 console = Console()
@@ -23,7 +23,7 @@ def create_progress() -> Progress:
     )
 
 
-def print_table_report(result: AnalysisResult) -> None:
+def print_table_report(result: AnalysisResult, show_incomplete: bool = False) -> None:
     """Print the analysis result as a formatted table."""
     # Header
     console.print()
@@ -45,12 +45,14 @@ def print_table_report(result: AnalysisResult) -> None:
         table.add_column("Hours", justify="right", style="bold")
 
         for entry in aggregated:
+            # Style "Unassigned" developer differently
+            developer_style = "yellow" if entry["developer"] == "Unassigned" else "green"
             table.add_row(
                 entry["issue_key"],
                 _truncate(entry["issue_title"], 30),
                 entry["issue_type"],
                 entry["epic_key"] or "—",
-                entry["developer"],
+                f"[{developer_style}]{entry['developer']}[/{developer_style}]",
                 f"{entry['hours']:.1f}",
             )
 
@@ -63,41 +65,33 @@ def print_table_report(result: AnalysisResult) -> None:
 
     console.print(f"Total issues analyzed: [bold]{result.total_issues}[/bold]")
     console.print(
-        f"Issues with complete data: [bold]{result.issues_with_data}[/bold] "
-        f"({_percent(result.issues_with_data, result.total_issues)})"
+        f"Issues with time spent: [bold]{result.issues_with_time}[/bold] "
+        f"({_percent(result.issues_with_time, result.total_issues)})"
     )
+
+    if result.issues_with_no_time > 0:
+        console.print(
+            f"[dim]Issues with no time spent: {result.issues_with_no_time} "
+            f"({_percent(result.issues_with_no_time, result.total_issues)})[/dim]"
+        )
 
     if result.unassigned_issues > 0:
         console.print(
-            f"[yellow]Unassigned issues: {result.unassigned_issues} "
-            f"({result.unassigned_percentage:.1f}%) — reported separately below[/yellow]"
+            f"[yellow]Issues without assignee: {result.unassigned_issues} "
+            f"({_percent(result.unassigned_issues, result.total_issues)})[/yellow]"
         )
 
-    # Unassigned section
-    if result.unassigned_entries:
-        console.print()
-        console.rule("[yellow]Unassigned Issues (Raw Time)[/yellow]")
-        console.print()
+    # Show issue keys if requested
+    if show_incomplete:
+        if result.no_time_issue_keys:
+            console.print()
+            console.print("[dim]Issues with no time spent:[/dim]")
+            console.print(f"  [dim]{', '.join(result.no_time_issue_keys)}[/dim]")
 
-        unassigned_table = Table(show_header=True, header_style="bold yellow")
-        unassigned_table.add_column("Issue", style="cyan", no_wrap=True)
-        unassigned_table.add_column("Title", max_width=30)
-        unassigned_table.add_column("Type", style="dim")
-        unassigned_table.add_column("Epic", style="dim")
-        unassigned_table.add_column("Raw Hours", justify="right")
-
-        # Aggregate unassigned by issue
-        unassigned_agg = _aggregate_unassigned(result.unassigned_entries)
-        for entry in unassigned_agg:
-            unassigned_table.add_row(
-                entry["issue_key"],
-                _truncate(entry["issue_title"], 30),
-                entry["issue_type"],
-                entry["epic_key"] or "—",
-                f"{entry['hours']:.1f}h raw",
-            )
-
-        console.print(unassigned_table)
+        if result.unassigned_issue_keys:
+            console.print()
+            console.print("[yellow]Issues without assignee:[/yellow]")
+            console.print(f"  [yellow]{', '.join(result.unassigned_issue_keys)}[/yellow]")
 
     console.print()
 
@@ -124,25 +118,6 @@ def _aggregate_for_display(
         grouped[key]["hours"] += entry.normalized_hours
 
     # Sort by issue key
-    return sorted(grouped.values(), key=lambda x: x["issue_key"])
-
-
-def _aggregate_unassigned(entries: list[RawTimeEntry]) -> list[dict]:
-    """Aggregate unassigned entries by issue for display."""
-    # We need issue details - for now, just aggregate by key
-    grouped: dict[str, dict] = {}
-
-    for entry in entries:
-        if entry.issue_key not in grouped:
-            grouped[entry.issue_key] = {
-                "issue_key": entry.issue_key,
-                "issue_title": "",  # Will be filled from issue data if available
-                "issue_type": "",
-                "epic_key": None,
-                "hours": 0.0,
-            }
-        grouped[entry.issue_key]["hours"] += entry.raw_hours
-
     return sorted(grouped.values(), key=lambda x: x["issue_key"])
 
 

@@ -62,6 +62,7 @@ def analyze(
     by_epic: Annotated[bool, typer.Option("--by-epic", help="Aggregate results by epic")] = False,
     output: Annotated[str, typer.Option("--output", "-o", help="Output format: table or csv")] = "table",
     output_file: Annotated[Optional[str], typer.Option("--output-file", help="File path for CSV output")] = None,
+    show_incomplete: Annotated[bool, typer.Option("--show-incomplete", help="List issue keys with no time or no assignee")] = False,
 ) -> None:
     """Analyze time allocation for issues matching a JQL query."""
     # Validate dates
@@ -139,31 +140,37 @@ def analyze(
 
         progress.update(calc_task, completed=len(issues))
 
-    if not assigned_entries and not unassigned_entries:
+    # Combine assigned and unassigned entries (unassigned get developer="Unassigned")
+    all_entries = assigned_entries.copy()
+    for entry in unassigned_entries:
+        entry.developer = "Unassigned"
+        all_entries.append(entry)
+
+    if not all_entries:
         print_no_activity_message(start_date, end_date)
         raise typer.Exit(EXIT_NO_DATA)
 
-    # Normalize time entries
-    normalized_entries = normalize_time_entries(assigned_entries, issues)
+    # Normalize time entries (includes unassigned with developer="Unassigned")
+    normalized_entries = normalize_time_entries(all_entries, issues)
 
     # Build result
     total_issues = len(issues)
-    issues_with_data = len(set(e.issue_key for e in normalized_entries))
-    unassigned_issues = len(set(e.issue_key for e in unassigned_entries))
-    unassigned_pct = (
-        100 * unassigned_issues / total_issues if total_issues > 0 else 0.0
-    )
+    all_issue_keys = {issue.key for issue in issues}
+    issues_with_time_keys = {e.issue_key for e in all_entries}
+    unassigned_issue_keys = sorted({e.issue_key for e in unassigned_entries})
+    no_time_issue_keys = sorted(all_issue_keys - issues_with_time_keys)
 
     result = AnalysisResult(
         jql_query=jql,
         start_date=start_date,
         end_date=end_date,
         total_issues=total_issues,
-        issues_with_data=issues_with_data,
-        unassigned_issues=unassigned_issues,
-        unassigned_percentage=unassigned_pct,
+        issues_with_time=len(issues_with_time_keys),
+        issues_with_no_time=len(no_time_issue_keys),
+        unassigned_issues=len(unassigned_issue_keys),
         entries=normalized_entries,
-        unassigned_entries=unassigned_entries,
+        no_time_issue_keys=no_time_issue_keys,
+        unassigned_issue_keys=unassigned_issue_keys,
         epic_summaries=None,  # Will be set if --by-epic
     )
 
@@ -174,7 +181,7 @@ def analyze(
         if by_epic:
             _print_epic_summary(result)
         else:
-            print_table_report(result)
+            print_table_report(result, show_incomplete=show_incomplete)
 
 
 def _output_csv(result: AnalysisResult, output_file: Optional[str]) -> None:
