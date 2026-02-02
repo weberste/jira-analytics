@@ -5,7 +5,8 @@ CLI tool to estimate time utilization from JIRA issues based on status transitio
 ## Features
 
 - Analyze issues matching any JQL query within a timeframe
-- Calculate normalized time per developer per day (max 7 hours, only scales down)
+- Calculate normalized time per developer per day (configurable max hours, only scales down)
+- Configurable workday boundaries (default: 8am-4pm)
 - Handle partial days, weekends, and parallel work
 - Developer attribution from changelog history
 - Epic aggregation view (default) or detailed per-issue breakdown
@@ -93,6 +94,13 @@ jira-analyzer utilization \
 ```bash
 jira-analyzer config show
 jira-analyzer config set active_statuses "In Progress,In Review"
+
+# Customize workday hours (default: 8am-4pm)
+jira-analyzer config set workday_start "09:00"
+jira-analyzer config set workday_end "17:00"
+
+# Customize max normalized hours per day (default: 7.0)
+jira-analyzer config set max_normalized_hours 6.5
 ```
 
 ## Development
@@ -216,8 +224,8 @@ cat specs/001-sprint-allocation/tasks.md
 ## Current Status
 
 **MVP Complete** (Phase 1-3):
-- [x] Core analysis with normalized time (max 7h/day, scale down only)
-- [x] Partial day handling (8am-4pm workday boundaries)
+- [x] Core analysis with normalized time (configurable max hours/day, scale down only)
+- [x] Configurable workday boundaries (default: 8am-4pm)
 - [x] Developer attribution from changelog history
 - [x] Epic aggregation (default view)
 - [x] Per-issue breakdown (`--by-issue`)

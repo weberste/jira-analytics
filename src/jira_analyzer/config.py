@@ -2,10 +2,34 @@
 
 import tomllib
 from dataclasses import dataclass, field
+from datetime import time
 from pathlib import Path
 from urllib.parse import urlparse
 
 import tomli_w
+
+
+def _parse_time(time_str: str) -> time:
+    """Parse a time string in HH:MM format to a time object."""
+    try:
+        parts = time_str.split(":")
+        if len(parts) != 2:
+            raise ValueError(f"Invalid time format: {time_str}")
+        hour, minute = int(parts[0]), int(parts[1])
+        return time(hour, minute)
+    except (ValueError, IndexError) as e:
+        raise ValueError(f"Invalid time format '{time_str}'. Use HH:MM format.") from e
+
+
+def _format_time(t: time) -> str:
+    """Format a time object as HH:MM string."""
+    return f"{t.hour:02d}:{t.minute:02d}"
+
+
+# Default workday settings
+DEFAULT_WORKDAY_START = time(8, 0)  # 8:00 AM
+DEFAULT_WORKDAY_END = time(16, 0)  # 4:00 PM
+DEFAULT_MAX_NORMALIZED_HOURS = 7.0
 
 
 @dataclass
@@ -17,6 +41,16 @@ class Config:
     jira_api_token: str
     active_statuses: list[str] = field(default_factory=lambda: ["In Progress"])
     developer_field: str | None = None
+    workday_start: time = field(default_factory=lambda: DEFAULT_WORKDAY_START)
+    workday_end: time = field(default_factory=lambda: DEFAULT_WORKDAY_END)
+    max_normalized_hours: float = DEFAULT_MAX_NORMALIZED_HOURS
+
+    @property
+    def workday_hours(self) -> float:
+        """Compute workday duration in hours from start/end times."""
+        start_minutes = self.workday_start.hour * 60 + self.workday_start.minute
+        end_minutes = self.workday_end.hour * 60 + self.workday_end.minute
+        return (end_minutes - start_minutes) / 60.0
 
     def validate(self) -> list[str]:
         """Validate configuration values. Returns list of error messages."""
@@ -45,6 +79,19 @@ class Config:
         # Validate active statuses
         if not self.active_statuses:
             errors.append("At least one active status is required")
+
+        # Validate workday times
+        if self.workday_start >= self.workday_end:
+            errors.append("workday_start must be before workday_end")
+
+        # Validate max_normalized_hours
+        if self.max_normalized_hours <= 0:
+            errors.append("max_normalized_hours must be greater than 0")
+        elif self.max_normalized_hours > self.workday_hours:
+            errors.append(
+                f"max_normalized_hours ({self.max_normalized_hours}) cannot exceed "
+                f"workday_hours ({self.workday_hours})"
+            )
 
         return errors
 
@@ -86,12 +133,31 @@ def load_config() -> Config:
     jira_section = data.get("jira", {})
     analysis_section = data.get("analysis", {})
 
+    # Parse workday times
+    workday_start_str = analysis_section.get("workday_start", "08:00")
+    workday_end_str = analysis_section.get("workday_end", "16:00")
+
+    try:
+        workday_start = _parse_time(workday_start_str)
+    except ValueError as e:
+        raise ValueError(f"Invalid workday_start: {e}")
+
+    try:
+        workday_end = _parse_time(workday_end_str)
+    except ValueError as e:
+        raise ValueError(f"Invalid workday_end: {e}")
+
     config = Config(
         jira_url=jira_section.get("url", ""),
         jira_email=jira_section.get("email", ""),
         jira_api_token=jira_section.get("api_token", ""),
         active_statuses=analysis_section.get("active_statuses", ["In Progress"]),
         developer_field=analysis_section.get("developer_field"),
+        workday_start=workday_start,
+        workday_end=workday_end,
+        max_normalized_hours=analysis_section.get(
+            "max_normalized_hours", DEFAULT_MAX_NORMALIZED_HOURS
+        ),
     )
 
     # Validate
@@ -117,6 +183,9 @@ def save_config(config: Config) -> None:
         },
         "analysis": {
             "active_statuses": config.active_statuses,
+            "workday_start": _format_time(config.workday_start),
+            "workday_end": _format_time(config.workday_end),
+            "max_normalized_hours": config.max_normalized_hours,
         },
     }
 

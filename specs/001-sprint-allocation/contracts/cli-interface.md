@@ -208,6 +208,10 @@ jira_email: user@example.com
 jira_api_token: ****...****
 active_statuses: ["In Progress"]
 developer_field: customfield_10001
+workday_start: 08:00
+workday_end: 16:00
+workday_hours: 8.0
+max_normalized_hours: 7.0
 ```
 
 #### `jira-analyzer config set <key> <value>`
@@ -217,6 +221,11 @@ Update a single configuration value.
 ```bash
 jira-analyzer config set active_statuses "In Progress,In Review"
 jira-analyzer config set developer_field customfield_10001
+
+# Workday configuration
+jira-analyzer config set workday_start "09:00"
+jira-analyzer config set workday_end "17:00"
+jira-analyzer config set max_normalized_hours 6.5
 ```
 
 ---
@@ -256,6 +265,14 @@ active_statuses = ["In Progress"]
 # Custom field name for Developer (optional)
 # Leave empty to use Assignee only
 developer_field = "customfield_10001"
+
+# Workday boundaries (HH:MM format)
+workday_start = "08:00"  # Default: 08:00
+workday_end = "16:00"    # Default: 16:00
+
+# Maximum normalized hours per developer per day
+# Must be > 0 and <= workday_hours (end - start)
+max_normalized_hours = 7.0  # Default: 7.0
 ```
 
 ---

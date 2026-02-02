@@ -9,10 +9,24 @@ from dateutil.rrule import DAILY, rrule, MO, TU, WE, TH, FR
 from jira_analyzer.models import AssigneeChange, Issue, RawTimeEntry, StatusTransition
 
 
-# Workday boundaries
-WORKDAY_START = time(8, 0)  # 8:00 AM
-WORKDAY_END = time(16, 0)  # 4:00 PM
-WORKDAY_HOURS = 8.0
+# Default workday boundaries (used when no config provided)
+DEFAULT_WORKDAY_START = time(8, 0)  # 8:00 AM
+DEFAULT_WORKDAY_END = time(16, 0)  # 4:00 PM
+
+
+@dataclass
+class WorkdayConfig:
+    """Configuration for workday boundaries."""
+
+    start: time = DEFAULT_WORKDAY_START
+    end: time = DEFAULT_WORKDAY_END
+
+    @property
+    def hours(self) -> float:
+        """Compute workday duration in hours."""
+        start_minutes = self.start.hour * 60 + self.start.minute
+        end_minutes = self.end.hour * 60 + self.end.minute
+        return (end_minutes - start_minutes) / 60.0
 
 
 @dataclass
@@ -45,10 +59,17 @@ def get_workdays_in_range(start_date: date, end_date: date) -> list[date]:
     )
 
 
-def clip_to_workday(dt: datetime, workday_date: date) -> datetime:
+def clip_to_workday(
+    dt: datetime,
+    workday_date: date,
+    workday_config: WorkdayConfig | None = None,
+) -> datetime:
     """Clip a datetime to workday boundaries for a given date."""
-    day_start = datetime.combine(workday_date, WORKDAY_START)
-    day_end = datetime.combine(workday_date, WORKDAY_END)
+    if workday_config is None:
+        workday_config = WorkdayConfig()
+
+    day_start = datetime.combine(workday_date, workday_config.start)
+    day_end = datetime.combine(workday_date, workday_config.end)
 
     # Make timezone-naive for comparison if needed
     if dt.tzinfo is not None:
@@ -65,6 +86,7 @@ def calculate_hours_for_day(
     period_start: datetime,
     period_end: datetime,
     workday_date: date,
+    workday_config: WorkdayConfig | None = None,
 ) -> float:
     """Calculate hours worked on a specific workday within an active period.
 
@@ -72,12 +94,16 @@ def calculate_hours_for_day(
         period_start: When the active period started
         period_end: When the active period ended
         workday_date: The specific workday to calculate hours for
+        workday_config: Workday boundaries configuration
 
     Returns:
-        Hours worked (0-8)
+        Hours worked (0 to workday_hours)
     """
-    day_start = datetime.combine(workday_date, WORKDAY_START)
-    day_end = datetime.combine(workday_date, WORKDAY_END)
+    if workday_config is None:
+        workday_config = WorkdayConfig()
+
+    day_start = datetime.combine(workday_date, workday_config.start)
+    day_end = datetime.combine(workday_date, workday_config.end)
 
     # Make timezone-naive for comparison
     if period_start.tzinfo is not None:
@@ -98,7 +124,7 @@ def calculate_hours_for_day(
     hours = duration.total_seconds() / 3600
 
     # Clamp to valid range
-    return max(0.0, min(WORKDAY_HOURS, hours))
+    return max(0.0, min(workday_config.hours, hours))
 
 
 def find_developer_at_time(
@@ -270,6 +296,8 @@ def calculate_raw_time(
     start_date: date,
     end_date: date,
     developer_field: str | None = None,
+    workday_start: time | None = None,
+    workday_end: time | None = None,
 ) -> tuple[list[RawTimeEntry], list[RawTimeEntry]]:
     """Calculate raw time entries for all issues.
 
@@ -279,12 +307,20 @@ def calculate_raw_time(
         start_date: Start of analysis timeframe
         end_date: End of analysis timeframe
         developer_field: Custom field name for developer (optional)
+        workday_start: Start of workday (default: 08:00)
+        workday_end: End of workday (default: 16:00)
 
     Returns:
         Tuple of (assigned entries, unassigned entries)
     """
     assigned_entries: list[RawTimeEntry] = []
     unassigned_entries: list[RawTimeEntry] = []
+
+    # Build workday config
+    workday_config = WorkdayConfig(
+        start=workday_start or DEFAULT_WORKDAY_START,
+        end=workday_end or DEFAULT_WORKDAY_END,
+    )
 
     # Get all workdays in the timeframe
     workdays = get_workdays_in_range(start_date, end_date)
@@ -297,7 +333,9 @@ def calculate_raw_time(
             for workday in workdays:
                 workday_date = workday.date() if isinstance(workday, datetime) else workday
 
-                hours = calculate_hours_for_day(period.start, period.end, workday_date)
+                hours = calculate_hours_for_day(
+                    period.start, period.end, workday_date, workday_config
+                )
 
                 if hours > 0:
                     is_unassigned = period.developer is None

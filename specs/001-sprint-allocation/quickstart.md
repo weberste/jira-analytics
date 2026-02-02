@@ -123,14 +123,25 @@ jira-analyzer utilization \
 The tool calculates time based on how long issues were in "active" statuses (default: "In Progress"):
 
 1. **Raw time**: Hours an issue spent in active status per day
-   - Full day in progress = 8 hours
-   - Partial day = actual hours (8am-4pm workday assumed)
+   - Full day in progress = workday hours (default: 8 hours)
+   - Partial day = actual hours within workday boundaries (default: 8am-4pm)
+   - Workday boundaries are configurable via `workday_start` and `workday_end`
 
 2. **Normalized time**: Adjusted to account for parallel work
    - Only scales **down**, never up (assumes untracked time = other work)
-   - Maximum 7 hours per developer per day (no one works at 100% capacity)
-   - If a developer worked on 3 issues totaling 10 raw hours, each is scaled proportionally to sum to 7 hours
-   - If tracked time <= 7 hours, raw hours are kept as-is
+   - Maximum hours per developer per day is configurable via `max_normalized_hours` (default: 7.0)
+   - If a developer worked on 3 issues totaling 10 raw hours, each is scaled proportionally to sum to max hours
+   - If tracked time <= max_normalized_hours, raw hours are kept as-is
+
+**Configure workday settings:**
+```bash
+# Set custom workday (9am to 5pm)
+jira-analyzer config set workday_start "09:00"
+jira-analyzer config set workday_end "17:00"
+
+# Set max normalized hours (default: 7.0)
+jira-analyzer config set max_normalized_hours 6.5
+```
 
 ### Data Quality
 

@@ -58,14 +58,14 @@ As a user, I want the tool to correctly handle issues that start or end partway 
 
 - System MUST only count time that falls within the specified timeframe (clipping at boundaries).
 - System MUST exclude weekends from analysis.
-- System MUST assume workday boundaries of 8am start and 4pm end for partial day calculations. So:
-  - For issues that only started on a given day, system MUST credit time from start until 4pm.
-  - For issues that only ended on a given day, system MUST credit time from 8am until end.
+- System MUST use configured workday boundaries (default: 8am start and 4pm end) for partial day calculations. So:
+  - For issues that only started on a given day, system MUST credit time from start until workday end.
+  - For issues that only ended on a given day, system MUST credit time from workday start until end.
 - System MUST calculate raw time per issue per developer per day based on "In Progress" status (or configurable active statuses).
-- For issues in progress all day, system MUST credit 7 hours of raw time.
+- For issues in progress all day, system MUST credit configured workday hours of raw time.
 - For issues that started and ended the same day, system MUST credit the actual duration.
-- System MUST normalize each developer's daily total to 7 hours maximum (assuming no one works at 100% capacity).
-- System MUST only scale down, never up: if tracked time > 7h, scale to 7h; if tracked time <= 7h, keep raw hours.
+- System MUST normalize each developer's daily total to configured normalized hours maximum.
+- System MUST only scale down, never up: if tracked time > normalized hours, scale to normalized hours; if tracked time <= normalized hours, keep raw hours.
 
 ---
 
@@ -187,8 +187,12 @@ These requirements apply across all user stories.
 **Configuration**:
 - System MUST authenticate to JIRA Cloud using API token (user email + API token).
 - System MUST support configurable active statuses (default: "In Progress" only, as it provides the cleanest signal for workflows lacking "Ready for X" states).
-- System MUST persist configuration (JIRA site URL, credentials, active statuses) in a local configuration file.
+- System MUST support configurable workday hours with start time and end time (default: 8:00-16:00).
+- System MUST support configurable normalized hours per day (default: 7 hours).
+- System MUST persist configuration (JIRA site URL, credentials, active statuses, workday hours, normalized hours) in a local configuration file.
 - System MUST validate configuration on load and report errors clearly.
+- System MUST validate that workday start is before workday end.
+- System MUST validate that normalized hours is positive and does not exceed workday length.
 
 **User Feedback**:
 - System MUST display a progress indicator during execution showing current phase (e.g., "Fetching issues", "Retrieving history", "Calculating time") and issue count processed.
@@ -229,7 +233,7 @@ These requirements apply across all user stories.
 - The tool will be used retrospectively on completed or nearly-completed work to measure actual allocation.
 - **Workflow limitation**: Many JIRA workflows lack "Ready for X" states (e.g., "Ready for Code Review", "Ready for QA"), causing statuses like "In Code Review" or "In QA" to include both active work time and queue/wait time. For such workflows, tracking only "In Progress" is recommended as the cleanest signal of active development effort. The assumption is that time spent in downstream activities (review, QA) is roughly proportional to development time for allocation purposes. Teams with workflows that have explicit "Ready for X" states can configure additional active statuses.
 - JIRA tracks status transitions with timestamps (standard behavior).
-- Developers work approximately 8-hour days; this is used for normalization, not as a strict requirement.
+- Developers work approximately standard workdays (default 8 hours); configurable workday and normalized hours accommodate different team practices.
 - Time spent in active status is a reasonable proxy for effort when actual time logging is not available.
 - The "Developer" custom field, if present, is more accurate than the assignee field for attribution.
 - Developers are identified by display name; duplicate display names within a team are assumed to be rare and will be treated as the same person.
@@ -247,6 +251,4 @@ These requirements apply across all user stories.
 - Integration with project management tools other than JIRA
 - Historical trend analysis across multiple time periods (potential future enhancement)
 - Predictive analytics or forecasting
-- Configurable workday hours (fixed at 8am-4pm, 8 hours)
-- Configurable normalized hours per day and developer (fixed at 7hours)
 - Holiday calendars

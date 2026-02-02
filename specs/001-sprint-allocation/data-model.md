@@ -17,6 +17,13 @@ class Config:
     jira_api_token: str        # API token (stored securely)
     active_statuses: list[str] # Default: ["In Progress"]
     developer_field: str | None # Custom field name, e.g., "customfield_10001"
+    workday_start: time        # Start of workday (default: 08:00)
+    workday_end: time          # End of workday (default: 16:00)
+    max_normalized_hours: float # Max hours per developer per day (default: 7.0)
+
+    @property
+    def workday_hours(self) -> float:
+        """Computed from workday_start and workday_end."""
 ```
 
 **Storage**: `~/.jira-analyzer/config.toml`
@@ -220,7 +227,9 @@ EpicSummary (N) ──── aggregated from ──── NormalizedTimeEntry (N
 | Config.jira_url | Must be valid HTTPS URL | Fail on load |
 | Config.jira_email | Must contain @ | Fail on load |
 | Config.jira_api_token | Must not be empty | Fail on load |
+| Config.workday_start | Must be before workday_end | Fail on load |
+| Config.max_normalized_hours | Must be > 0 and <= workday_hours | Fail on load |
 | Timeframe | start_date <= end_date | Fail before analysis |
 | Timeframe | Dates must not be in future | Warning only |
-| RawTimeEntry.raw_hours | 0 <= hours <= 8 | Clamp to bounds |
-| NormalizedTimeEntry.normalized_hours | Sum per developer per day = 8 | Invariant |
+| RawTimeEntry.raw_hours | 0 <= hours <= workday_hours | Clamp to bounds |
+| NormalizedTimeEntry.normalized_hours | Sum per developer per day <= max_normalized_hours | Invariant |

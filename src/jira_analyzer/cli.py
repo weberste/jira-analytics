@@ -16,6 +16,8 @@ from jira_analyzer.config import (
     save_config,
     mask_token,
     get_config_path,
+    _parse_time,
+    _format_time,
 )
 from jira_analyzer.jira_client import JiraClient, AuthenticationError, RateLimitError
 from jira_analyzer.models import AnalysisResult
@@ -154,6 +156,8 @@ def utilization(
             start_date=start_date,
             end_date=end_date,
             developer_field=config.developer_field,
+            workday_start=config.workday_start,
+            workday_end=config.workday_end,
         )
 
         progress.update(calc_task, completed=len(issues))
@@ -169,7 +173,9 @@ def utilization(
         raise typer.Exit(EXIT_NO_DATA)
 
     # Normalize time entries (includes unassigned with developer="Unassigned")
-    normalized_entries = normalize_time_entries(all_entries, issues)
+    normalized_entries = normalize_time_entries(
+        all_entries, issues, max_normalized_hours=config.max_normalized_hours
+    )
 
     # Build result
     total_issues = len(issues)
@@ -377,6 +383,10 @@ def config_show() -> None:
     console.print(f"jira_api_token: {mask_token(config.jira_api_token)}")
     console.print(f"active_statuses: {config.active_statuses}")
     console.print(f"developer_field: {config.developer_field or '(not set)'}")
+    console.print(f"workday_start: {_format_time(config.workday_start)}")
+    console.print(f"workday_end: {_format_time(config.workday_end)}")
+    console.print(f"workday_hours: {config.workday_hours}")
+    console.print(f"max_normalized_hours: {config.max_normalized_hours}")
 
 
 @config_app.command("set")
@@ -406,9 +416,30 @@ def config_set(
         config.active_statuses = [s.strip() for s in value.split(",")]
     elif key == "developer_field":
         config.developer_field = value or None
+    elif key == "workday_start":
+        try:
+            config.workday_start = _parse_time(value)
+        except ValueError as e:
+            print_error(str(e))
+            raise typer.Exit(EXIT_INVALID_ARGS)
+    elif key == "workday_end":
+        try:
+            config.workday_end = _parse_time(value)
+        except ValueError as e:
+            print_error(str(e))
+            raise typer.Exit(EXIT_INVALID_ARGS)
+    elif key == "max_normalized_hours":
+        try:
+            config.max_normalized_hours = float(value)
+        except ValueError:
+            print_error(f"Invalid value for max_normalized_hours: {value}")
+            raise typer.Exit(EXIT_INVALID_ARGS)
     else:
         print_error(f"Unknown configuration key: {key}")
-        console.print("Valid keys: jira_url, jira_email, jira_api_token, active_statuses, developer_field")
+        console.print(
+            "Valid keys: jira_url, jira_email, jira_api_token, active_statuses, "
+            "developer_field, workday_start, workday_end, max_normalized_hours"
+        )
         raise typer.Exit(EXIT_INVALID_ARGS)
 
     # Validate
