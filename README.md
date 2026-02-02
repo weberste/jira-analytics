@@ -36,12 +36,6 @@ pip install -e .
 pip install -e ".[dev]"
 ```
 
-### Install with Web Interface
-
-```bash
-pip install -e ".[web]"
-```
-
 ## Quick Start
 
 ### 1. Configure
