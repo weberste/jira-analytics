@@ -462,5 +462,32 @@ def version() -> None:
     console.print(f"Python {sys.version.split()[0]}")
 
 
+@app.command()
+def web(
+    port: Annotated[int, typer.Option("--port", "-p", help="Port to run the server on")] = 5000,
+    host: Annotated[str, typer.Option("--host", help="Host to bind to")] = "127.0.0.1",
+    open_browser: Annotated[bool, typer.Option("--open", "-o", help="Open browser automatically")] = False,
+    debug: Annotated[bool, typer.Option("--debug", help="Run in debug mode")] = False,
+) -> None:
+    """Start the web interface server."""
+    try:
+        from jira_analyzer.web import create_app
+    except ImportError:
+        print_error("Web dependencies not installed. Run: pip install jira-analyzer[web]")
+        raise typer.Exit(EXIT_CONFIG_ERROR)
+
+    app = create_app()
+
+    url = f"http://{host}:{port}"
+    console.print(f"Starting web interface at [bold]{url}[/bold]")
+    console.print("Press CTRL+C to stop")
+
+    if open_browser:
+        import webbrowser
+        webbrowser.open(url)
+
+    app.run(host=host, port=port, debug=debug)
+
+
 if __name__ == "__main__":
     app()

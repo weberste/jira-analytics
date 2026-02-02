@@ -29,6 +29,9 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.0.0",
 ]
+web = [
+    "flask>=3.0.0",
+]
 
 [project.scripts]
 jira-analyzer = "jira_analyzer.cli:app"

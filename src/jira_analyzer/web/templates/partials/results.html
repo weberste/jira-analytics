@@ -1,0 +1,122 @@
+<div class="results-section">
+    <!-- Summary Panel -->
+    <div class="summary-panel">
+        <div class="summary-item">
+            <div class="value">{{ result.total_issues }}</div>
+            <div class="label">Total Issues</div>
+        </div>
+        <div class="summary-item">
+            <div class="value">{{ result.issues_with_time }}</div>
+            <div class="label">With Time</div>
+        </div>
+        <div class="summary-item">
+            <div class="value">{{ result.issues_with_no_time }}</div>
+            <div class="label">No Time</div>
+        </div>
+        <div class="summary-item">
+            <div class="value">{{ result.unassigned_issues }}</div>
+            <div class="label">Unassigned</div>
+        </div>
+        {% if result.from_cache %}
+        <div class="summary-item">
+            <span class="cache-indicator">(using cached data)</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Chart and Epic Table -->
+    <div class="chart-table-container">
+        <div class="chart-container">
+            <canvas id="epic-chart"></canvas>
+        </div>
+        <div class="epic-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Epic</th>
+                        <th>Title</th>
+                        <th class="text-right">Hours</th>
+                        <th class="text-right">%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(result.epic_chart_data.labels | length) %}
+                    <tr>
+                        <td>{{ result.epic_chart_data.epic_keys[i] or '—' }}</td>
+                        <td>{{ result.epic_chart_data.labels[i] }}</td>
+                        <td class="text-right">{{ result.epic_chart_data.values[i] }}</td>
+                        <td class="text-right">{{ result.epic_chart_data.percentages[i] }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="2">TOTAL</td>
+                        <td class="text-right">{{ result.epic_chart_data.values | sum | round(1) }}</td>
+                        <td class="text-right">100%</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- View Tabs and Actions -->
+    <div class="actions-bar">
+        <div class="view-tabs">
+            <button class="view-tab active" onclick="switchView('epic')">Epic View</button>
+            <button class="view-tab" onclick="switchView('issue')">Issue View</button>
+        </div>
+        <div>
+            <button class="btn btn-secondary" onclick="clearFilter()" id="clear-filter-btn" style="display: none;">
+                Clear Filter
+            </button>
+            <form method="POST" action="{{ url_for('main.export') if 'main.export' in url_for.__globals__['current_app'].url_map._rules_by_endpoint else '#' }}" style="display: inline;" id="export-form">
+                <input type="hidden" name="jql" value="{{ jql }}">
+                <input type="hidden" name="from_date" value="{{ from_date }}">
+                <input type="hidden" name="to_date" value="{{ to_date }}">
+                <button type="submit" class="btn btn-secondary" id="export-btn">Export CSV</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Filter Indicator -->
+    <div class="filter-indicator" id="filter-indicator">
+        <span class="filter-text">Filtering by: <strong id="filter-epic-name"></strong></span>
+    </div>
+
+    <!-- Epic View (default) -->
+    <div class="view-content active" id="epic-view">
+        <p>Click on a chart segment to filter the issue table below.</p>
+    </div>
+
+    <!-- Issue View -->
+    <div class="view-content" id="issue-view">
+        <table class="data-table" id="issue-table">
+            <thead>
+                <tr>
+                    <th class="sortable" data-column="issue_key">Issue</th>
+                    <th class="sortable" data-column="issue_title">Title</th>
+                    <th class="sortable" data-column="issue_type">Type</th>
+                    <th class="sortable" data-column="epic_title">Epic</th>
+                    <th class="sortable" data-column="developer">Developer</th>
+                    <th class="sortable sorted-desc" data-column="normalized_hours">Hours</th>
+                </tr>
+            </thead>
+            <tbody id="issue-table-body">
+                {% for row in result.issue_table_data %}
+                <tr data-epic-key="{{ row.epic_key or '' }}">
+                    <td><a href="{{ row.issue_url }}" target="_blank">{{ row.issue_key }}</a></td>
+                    <td>{{ row.issue_title[:50] }}{% if row.issue_title | length > 50 %}...{% endif %}</td>
+                    <td>{{ row.issue_type }}</td>
+                    <td>{{ row.epic_title or '—' }}</td>
+                    <td>{{ row.developer }}</td>
+                    <td class="text-right">{{ row.normalized_hours }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination" id="pagination"></div>
+    </div>
+</div>

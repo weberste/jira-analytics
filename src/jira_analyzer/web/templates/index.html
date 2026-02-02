@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% if not has_config %}
+<div class="setup-instructions">
+    <h2>Setup Required</h2>
+    <p>JIRA credentials are not configured. Please run the following command in your terminal:</p>
+    <code>jira-analyzer config init</code>
+    <p>Then refresh this page.</p>
+</div>
+{% else %}
+
+{% include "partials/error.html" %}
+{% include "partials/form.html" %}
+
+{% if result %}
+{% include "partials/results.html" %}
+{% endif %}
+
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        // Restore form state
+        if (typeof restoreFormState === 'function') {
+            restoreFormState();
+        }
+
+        // Form submission handler
+        const form = document.getElementById('analysis-form');
+        const loading = document.getElementById('loading-indicator');
+        const submitBtn = document.getElementById('submit-btn');
+
+        if (form) {
+            form.addEventListener('submit', function() {
+                // Save form state
+                if (typeof saveFormState === 'function') {
+                    saveFormState();
+                }
+                // Show loading
+                if (loading) loading.classList.add('active');
+                if (submitBtn) submitBtn.disabled = true;
+            });
+        }
+
+        {% if result %}
+        // Initialize chart if results exist
+        if (typeof initEpicChart === 'function') {
+            const chartData = {{ result.epic_chart_data | tojson | safe }};
+            initEpicChart('epic-chart', chartData);
+        }
+
+        // Initialize table functionality
+        if (typeof initTable === 'function') {
+            const issueData = {{ result.issue_table_data | tojson | safe }};
+            initTable(issueData);
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}
