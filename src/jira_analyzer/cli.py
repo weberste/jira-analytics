@@ -35,7 +35,7 @@ from jira_analyzer.time_calculator import calculate_raw_time
 
 app = typer.Typer(
     name="jira-analyzer",
-    help="Analyze time allocation from JIRA issues",
+    help="Analyze time utilization from JIRA issues",
     no_args_is_help=True,
 )
 
@@ -67,7 +67,7 @@ def utilization(
     show_incomplete: Annotated[bool, typer.Option("--show-incomplete", help="List issue keys with no time or no assignee")] = False,
     no_cache: Annotated[bool, typer.Option("--no-cache", help="Force fresh fetch from JIRA, bypassing cache")] = False,
 ) -> None:
-    """Analyze time allocation for issues matching a JQL query."""
+    """Analyze time utilization for issues matching a JQL query."""
     # Validate dates
     try:
         start_date = parse_date(from_date)
@@ -281,7 +281,7 @@ def _print_epic_summary(result: AnalysisResult, show_incomplete: bool = False) -
 
     # Print epic table
     console.print()
-    console.rule("[bold]Epic Allocation Summary[/bold]")
+    console.rule("[bold]Epic Utilization Summary[/bold]")
     console.print(f"[dim]{result.start_date} to {result.end_date}[/dim]", justify="center")
     console.print()
 

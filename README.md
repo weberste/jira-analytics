@@ -1,6 +1,6 @@
-# JIRA Allocation Analyzer
+# JIRA Utilization Analyzer
 
-CLI tool to estimate time allocation from JIRA issues based on status transition history — without requiring developers to log time.
+CLI tool to estimate time utilization from JIRA issues based on status transition history — without requiring developers to log time.
 
 ## Features
 
@@ -85,7 +85,7 @@ jira-analyzer utilization \
   --from 2026-01-01 \
   --to 2026-01-31 \
   --output csv \
-  --output-file allocation.csv
+  --output-file utilization.csv
 ```
 
 ### 3. View/Update Configuration

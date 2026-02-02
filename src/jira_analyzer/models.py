@@ -1,4 +1,4 @@
-"""Data models for JIRA Allocation Analyzer."""
+"""Data models for JIRA Utilization Analyzer."""
 
 from dataclasses import dataclass, field
 from datetime import date, datetime

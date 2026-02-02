@@ -9,7 +9,7 @@
 jira-analyzer <command> [options]
 
 Commands:
-  utilization Analyze time allocation for issues matching a JQL query
+  utilization Analyze time utilization for issues matching a JQL query
   config      Manage configuration (init, show, set)
   version     Show version information
 ```
@@ -18,7 +18,7 @@ Commands:
 
 ## `jira-analyzer utilization`
 
-Main command to analyze time allocation.
+Main command to analyze time utilization.
 
 ### Usage
 
@@ -66,7 +66,7 @@ jira-analyzer utilization \
   --from 2026-01-01 \
   --to 2026-01-31 \
   --output csv \
-  --output-file allocation.csv
+  --output-file utilization.csv
 ```
 
 ### Output: Table Format (default - epic aggregation)
@@ -77,7 +77,7 @@ Retrieving history... [███████████████████
 Calculating time...
 
 ═══════════════════════════════════════════════════════════════════════════════
-                        Epic Allocation Summary
+                        Epic Utilization Summary
                      2026-01-01 to 2026-01-14
 ═══════════════════════════════════════════════════════════════════════════════
 
@@ -103,7 +103,7 @@ Issues without assignee: 2 (4.3%)
 
 ```
 ═══════════════════════════════════════════════════════════════════════════════
-                        Issue Allocation Summary
+                        Issue Utilization Summary
                      2026-01-01 to 2026-01-14
 ═══════════════════════════════════════════════════════════════════════════════
 
