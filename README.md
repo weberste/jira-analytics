@@ -12,6 +12,7 @@ CLI tool to estimate time utilization from JIRA issues based on status transitio
 - Epic aggregation view (default) or detailed per-issue breakdown
 - Local caching with 24-hour expiry to avoid redundant API calls
 - CSV export for further analysis
+- **Web interface** with interactive charts and filtering
 
 ## Installation
 
@@ -33,6 +34,12 @@ pip install -e .
 
 ```bash
 pip install -e ".[dev]"
+```
+
+### Install with Web Interface
+
+```bash
+pip install -e ".[web]"
 ```
 
 ## Quick Start
@@ -103,6 +110,32 @@ jira-analyzer config set workday_end "17:00"
 jira-analyzer config set max_normalized_hours 6.5
 ```
 
+### 4. Web Interface (Optional)
+
+Run the browser-based UI for interactive analysis:
+
+```bash
+# Start the web server (default: http://127.0.0.1:5000)
+jira-analyzer web
+
+# Specify a different port
+jira-analyzer web --port 8080
+
+# Open browser automatically
+jira-analyzer web --open
+
+# Run in debug mode (auto-reload on changes)
+jira-analyzer web --debug
+```
+
+The web interface provides:
+- Query form with JQL and date range inputs
+- Interactive pie chart showing epic allocation
+- Epic summary table with hours and percentages
+- Sortable issue breakdown table with pagination
+- Click chart segments to filter by epic
+- CSV export of results
+
 ## Development
 
 ### Setup
@@ -157,6 +190,12 @@ src/jira_analyzer/
 ├── normalizer.py       # 7h/day max normalization (scale down only)
 ├── cache.py            # Local caching with 24h expiry
 ├── output.py           # Table/CSV formatting
+└── web/                # Web interface (Flask)
+    ├── app.py          # Flask application factory
+    ├── routes.py       # HTTP route handlers
+    ├── analysis.py     # Analysis bridge to core modules
+    ├── templates/      # Jinja2 HTML templates
+    └── static/         # CSS and JavaScript
 ```
 
 ## Working with Speckit
@@ -234,11 +273,20 @@ cat specs/001-sprint-allocation/tasks.md
 - [x] Local caching with 24h expiry (`--no-cache` to bypass)
 - [x] Incomplete issue reporting (`--show-incomplete`)
 
-**Remaining** (Phase 4-7):
+**Web Interface** (002-web-interface):
+- [x] Flask-based web server
+- [x] Query form with JQL and date inputs
+- [x] Interactive pie chart (Chart.js)
+- [x] Epic allocation table
+- [x] Sortable issue table with pagination
+- [x] Chart filtering by epic
+- [ ] CSV export from web UI
+
+**Remaining**:
 - [ ] Unit and integration tests
 - [ ] Additional error handling polish
 
-See `specs/001-sprint-allocation/tasks.md` for full task list.
+See `specs/001-sprint-allocation/tasks.md` and `specs/002-web-interface/tasks.md` for full task lists.
 
 ## License
 
