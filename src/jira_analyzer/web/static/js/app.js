@@ -24,24 +24,20 @@ function initTable(data) {
 }
 
 /**
- * Switch between Epic View and Issue View
- * @param {string} view - 'epic' or 'issue'
+ * Toggle the issue table visibility
  */
-function switchView(view) {
-    // Update tab buttons
-    document.querySelectorAll('.view-tab').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    event.target.classList.add('active');
+function toggleIssueTable() {
+    const issueView = document.getElementById('issue-view');
+    const toggleBtn = document.getElementById('toggle-issues-btn');
 
-    // Update view content
-    document.querySelectorAll('.view-content').forEach(content => {
-        content.classList.remove('active');
-    });
+    if (!issueView || !toggleBtn) return;
 
-    const viewElement = document.getElementById(view + '-view');
-    if (viewElement) {
-        viewElement.classList.add('active');
+    if (issueView.style.display === 'none') {
+        issueView.style.display = 'block';
+        toggleBtn.textContent = 'Hide all issues';
+    } else {
+        issueView.style.display = 'none';
+        toggleBtn.textContent = 'Show all issues';
     }
 }
 
@@ -73,8 +69,11 @@ function filterTableByEpic(epicKey, epicName) {
     if (filterEpicName) filterEpicName.textContent = epicName;
     if (clearBtn) clearBtn.style.display = 'inline-block';
 
-    // Switch to issue view to show filtered results
-    switchViewTo('issue');
+    // Show issue table if hidden
+    const issueView = document.getElementById('issue-view');
+    const toggleBtn = document.getElementById('toggle-issues-btn');
+    if (issueView) issueView.style.display = 'block';
+    if (toggleBtn) toggleBtn.textContent = 'Hide all issues';
 
     // Re-render table
     renderTable();
@@ -97,30 +96,6 @@ function clearFilter() {
 
     // Re-render table
     renderTable();
-}
-
-/**
- * Switch to a specific view programmatically
- * @param {string} view - 'epic' or 'issue'
- */
-function switchViewTo(view) {
-    // Update tab buttons
-    document.querySelectorAll('.view-tab').forEach(tab => {
-        tab.classList.remove('active');
-        if (tab.textContent.toLowerCase().includes(view)) {
-            tab.classList.add('active');
-        }
-    });
-
-    // Update view content
-    document.querySelectorAll('.view-content').forEach(content => {
-        content.classList.remove('active');
-    });
-
-    const viewElement = document.getElementById(view + '-view');
-    if (viewElement) {
-        viewElement.classList.add('active');
-    }
 }
 
 /**

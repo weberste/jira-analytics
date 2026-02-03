@@ -60,16 +60,15 @@
         </div>
     </div>
 
-    <!-- View Tabs and Actions -->
+    <!-- Actions Bar -->
     <div class="actions-bar">
-        <div class="view-tabs">
-            <button class="view-tab active" onclick="switchView('epic')">Epic View</button>
-            <button class="view-tab" onclick="switchView('issue')">Issue View</button>
-        </div>
         <div>
+            <button class="btn btn-secondary" onclick="toggleIssueTable()" id="toggle-issues-btn">Show all issues</button>
             <button class="btn btn-secondary" onclick="clearFilter()" id="clear-filter-btn" style="display: none;">
                 Clear Filter
             </button>
+        </div>
+        <div>
             <form method="POST" action="{{ url_for('main.export') if 'main.export' in url_for.__globals__['current_app'].url_map._rules_by_endpoint else '#' }}" style="display: inline;" id="export-form">
                 <input type="hidden" name="jql" value="{{ jql }}">
                 <input type="hidden" name="from_date" value="{{ from_date }}">
@@ -84,13 +83,8 @@
         <span class="filter-text">Filtering by: <strong id="filter-epic-name"></strong></span>
     </div>
 
-    <!-- Epic View (default) -->
-    <div class="view-content active" id="epic-view">
-        <p>Click on a chart segment to filter the issue table below.</p>
-    </div>
-
-    <!-- Issue View -->
-    <div class="view-content" id="issue-view">
+    <!-- Issue Table (hidden by default) -->
+    <div class="issue-table-section" id="issue-view" style="display: none;">
         <table class="data-table" id="issue-table">
             <thead>
                 <tr>

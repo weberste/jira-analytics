@@ -294,38 +294,9 @@ footer code {
     text-decoration: underline;
 }
 
-/* View tabs */
-.view-tabs {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.view-tab {
-    padding: 8px 16px;
-    background: #e9ecef;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-}
-
-.view-tab.active {
-    background: #4e79a7;
-    color: white;
-}
-
-.view-tab:hover:not(.active) {
-    background: #dee2e6;
-}
-
-/* Hidden views */
-.view-content {
-    display: none;
-}
-
-.view-content.active {
-    display: block;
+/* Issue table section */
+.issue-table-section {
+    margin-top: 20px;
 }
 
 /* Filter indicator */
