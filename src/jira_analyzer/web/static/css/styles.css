@@ -89,6 +89,24 @@ footer code {
     flex: 1;
 }
 
+.checkbox-group {
+    margin-top: 5px;
+}
+
+.checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
 .btn {
     display: inline-block;
     padding: 10px 20px;

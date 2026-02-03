@@ -54,6 +54,7 @@ def analyze():
     jql = request.form.get("jql", "").strip()
     from_date_str = request.form.get("from_date", "").strip()
     to_date_str = request.form.get("to_date", "").strip()
+    no_cache = request.form.get("no_cache") == "1"
 
     # Validate inputs
     if not jql:
@@ -64,6 +65,7 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 400
 
     if not from_date_str or not to_date_str:
@@ -74,6 +76,7 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 400
 
     # Parse dates
@@ -87,6 +90,7 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 400
 
     try:
@@ -99,6 +103,7 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 400
 
     if from_date > to_date:
@@ -109,11 +114,12 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 400
 
     # Run analysis
     try:
-        result = run_analysis(jql, from_date, to_date)
+        result = run_analysis(jql, from_date, to_date, no_cache=no_cache)
     except ConfigNotFoundError as e:
         return render_template(
             "index.html",
@@ -122,6 +128,7 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 503
     except InvalidConfigError as e:
         return render_template(
@@ -131,6 +138,7 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 503
     except JiraAuthError as e:
         return render_template(
@@ -140,6 +148,7 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 401
     except JiraRateLimitError as e:
         return render_template(
@@ -149,6 +158,7 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 429
     except InvalidJqlError as e:
         return render_template(
@@ -158,6 +168,7 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 400
     except (NoIssuesFoundError, NoActivityFoundError) as e:
         return render_template(
@@ -167,6 +178,7 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 200
     except AnalysisError as e:
         return render_template(
@@ -176,6 +188,7 @@ def analyze():
             jql=jql,
             from_date=from_date_str,
             to_date=to_date_str,
+            no_cache=no_cache,
         ), 500
 
     # Render with results
@@ -186,4 +199,5 @@ def analyze():
         jql=jql,
         from_date=from_date_str,
         to_date=to_date_str,
+        no_cache=no_cache,
     )

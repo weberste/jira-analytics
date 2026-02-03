@@ -18,6 +18,13 @@
                        value="{{ to_date or '' }}" required>
             </div>
         </div>
+        <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="no_cache" name="no_cache" value="1"
+                       {{ 'checked' if no_cache else '' }}>
+                Don't use cached data
+            </label>
+        </div>
         <button type="submit" class="btn btn-primary" id="submit-btn">Analyze</button>
     </form>
 </div>
