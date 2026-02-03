@@ -2,7 +2,10 @@
 
 from datetime import datetime
 
-from flask import Blueprint, jsonify, render_template, request
+import csv
+import io
+
+from flask import Blueprint, Response, jsonify, render_template, request
 
 from jira_analyzer import __version__
 from jira_analyzer.config import config_exists
@@ -200,4 +203,71 @@ def analyze():
         from_date=from_date_str,
         to_date=to_date_str,
         no_cache=no_cache,
+    )
+
+
+@bp.route("/export", methods=["POST"])
+def export():
+    """Export analysis results as CSV."""
+    # Get form data
+    jql = request.form.get("jql", "").strip()
+    from_date_str = request.form.get("from_date", "").strip()
+    to_date_str = request.form.get("to_date", "").strip()
+
+    # Validate inputs
+    if not jql or not from_date_str or not to_date_str:
+        return "Missing required parameters", 400
+
+    # Parse dates
+    try:
+        from_date = datetime.strptime(from_date_str, "%Y-%m-%d").date()
+        to_date = datetime.strptime(to_date_str, "%Y-%m-%d").date()
+    except ValueError:
+        return "Invalid date format", 400
+
+    # Run analysis (use cache by default for export)
+    try:
+        result = run_analysis(jql, from_date, to_date, no_cache=False)
+    except AnalysisError as e:
+        return str(e), 500
+
+    # Generate CSV
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Header
+    writer.writerow([
+        "issue_key",
+        "issue_title",
+        "issue_type",
+        "epic_key",
+        "epic_title",
+        "developer",
+        "date",
+        "raw_hours",
+        "normalized_hours",
+    ])
+
+    # Data rows
+    for entry in result.entries:
+        writer.writerow([
+            entry.issue_key,
+            entry.issue_title,
+            entry.issue_type,
+            entry.epic_key or "",
+            entry.epic_title or "",
+            entry.developer,
+            entry.date.isoformat(),
+            f"{entry.raw_hours:.2f}",
+            f"{entry.normalized_hours:.2f}",
+        ])
+
+    # Create response
+    csv_content = output.getvalue()
+    filename = f"jira-utilization-{from_date_str}-{to_date_str}.csv"
+
+    return Response(
+        csv_content,
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
     )

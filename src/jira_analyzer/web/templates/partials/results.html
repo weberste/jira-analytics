@@ -69,7 +69,7 @@
             </button>
         </div>
         <div>
-            <form method="POST" action="{{ url_for('main.export') if 'main.export' in url_for.__globals__['current_app'].url_map._rules_by_endpoint else '#' }}" style="display: inline;" id="export-form">
+            <form method="POST" action="{{ url_for('main.export') }}" style="display: inline;" id="export-form">
                 <input type="hidden" name="jql" value="{{ jql }}">
                 <input type="hidden" name="from_date" value="{{ from_date }}">
                 <input type="hidden" name="to_date" value="{{ to_date }}">

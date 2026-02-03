@@ -114,11 +114,11 @@
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Add Export CSV button to results partial
-- [ ] T038 [US4] Implement POST /export route in src/jira_analyzer/web/routes.py
-- [ ] T039 [US4] Implement generate_csv() function in src/jira_analyzer/web/analysis.py (reuses CLI CSV format)
-- [ ] T040 [US4] Add hidden form for export with current query parameters
-- [ ] T041 [US4] Wire Export button to submit export form via JavaScript in app.js
+- [x] T037 [US4] Add Export CSV button to results partial
+- [x] T038 [US4] Implement POST /export route in src/jira_analyzer/web/routes.py
+- [x] T039 [US4] Implement generate_csv() function in src/jira_analyzer/web/analysis.py (reuses CLI CSV format)
+- [x] T040 [US4] Add hidden form for export with current query parameters
+- [x] T041 [US4] Wire Export button to submit export form via JavaScript in app.js
 
 **Checkpoint**: User Story 4 complete - CSV export works and matches CLI format
 

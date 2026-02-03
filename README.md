@@ -274,7 +274,7 @@ cat specs/001-sprint-allocation/tasks.md
 - [x] Epic allocation table
 - [x] Sortable issue table with pagination
 - [x] Chart filtering by epic
-- [ ] CSV export from web UI
+- [x] CSV export from web UI
 
 **Remaining**:
 - [ ] Unit and integration tests
