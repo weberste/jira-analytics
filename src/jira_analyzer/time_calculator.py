@@ -97,7 +97,7 @@ def calculate_hours_for_day(
         workday_config: Workday boundaries configuration
 
     Returns:
-        Hours worked (0 to workday_hours)
+        Hours worked (0 to workday duration)
     """
     if workday_config is None:
         workday_config = WorkdayConfig()

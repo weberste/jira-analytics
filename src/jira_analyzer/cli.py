@@ -385,7 +385,6 @@ def config_show() -> None:
     console.print(f"developer_field: {config.developer_field or '(not set)'}")
     console.print(f"workday_start: {_format_time(config.workday_start)}")
     console.print(f"workday_end: {_format_time(config.workday_end)}")
-    console.print(f"workday_hours: {config.workday_hours}")
     console.print(f"max_normalized_hours: {config.max_normalized_hours}")
 
 

@@ -45,13 +45,6 @@ class Config:
     workday_end: time = field(default_factory=lambda: DEFAULT_WORKDAY_END)
     max_normalized_hours: float = DEFAULT_MAX_NORMALIZED_HOURS
 
-    @property
-    def workday_hours(self) -> float:
-        """Compute workday duration in hours from start/end times."""
-        start_minutes = self.workday_start.hour * 60 + self.workday_start.minute
-        end_minutes = self.workday_end.hour * 60 + self.workday_end.minute
-        return (end_minutes - start_minutes) / 60.0
-
     def validate(self) -> list[str]:
         """Validate configuration values. Returns list of error messages."""
         errors: list[str] = []
@@ -87,11 +80,6 @@ class Config:
         # Validate max_normalized_hours
         if self.max_normalized_hours <= 0:
             errors.append("max_normalized_hours must be greater than 0")
-        elif self.max_normalized_hours > self.workday_hours:
-            errors.append(
-                f"max_normalized_hours ({self.max_normalized_hours}) cannot exceed "
-                f"workday_hours ({self.workday_hours})"
-            )
 
         return errors
 
