@@ -7,6 +7,7 @@ const ROWS_PER_PAGE = 100;
 
 // State
 let allIssueRows = [];
+let noTimeRows = [];
 let filteredRows = [];
 let currentPage = 1;
 let currentSort = { column: 'normalized_hours', direction: 'desc' };
@@ -14,10 +15,12 @@ let currentFilter = null;
 
 /**
  * Initialize the issue table with data
- * @param {Array} data - Array of IssueRow objects
+ * @param {Array} data - Array of IssueRow objects (with time)
+ * @param {Array} noTimeData - Array of IssueRow objects (without time)
  */
-function initTable(data) {
+function initTable(data, noTimeData) {
     allIssueRows = data;
+    noTimeRows = noTimeData || [];
     filteredRows = [...data];
     renderTable();
     setupSortHandlers();
@@ -93,6 +96,59 @@ function clearFilter() {
 
     if (filterIndicator) filterIndicator.classList.remove('active');
     if (clearBtn) clearBtn.style.display = 'none';
+
+    // Re-render table
+    renderTable();
+}
+
+/**
+ * Filter by summary category
+ * @param {string} category - 'all', 'with_time', 'no_time', or 'unassigned'
+ */
+function filterByCategory(category) {
+    currentPage = 1;
+
+    const filterIndicator = document.getElementById('filter-indicator');
+    const filterEpicName = document.getElementById('filter-epic-name');
+    const clearBtn = document.getElementById('clear-filter-btn');
+
+    let filterLabel = '';
+
+    switch (category) {
+        case 'all':
+            // Show all issues (with time + no time)
+            filteredRows = [...allIssueRows, ...noTimeRows];
+            filterLabel = 'All Issues';
+            break;
+        case 'with_time':
+            // Show issues with time
+            filteredRows = [...allIssueRows];
+            filterLabel = 'Issues with Time';
+            break;
+        case 'no_time':
+            // Show issues without time
+            filteredRows = [...noTimeRows];
+            filterLabel = 'Issues without Time';
+            break;
+        case 'unassigned':
+            // Filter to unassigned issues
+            filteredRows = allIssueRows.filter(row => row.developer === 'Unassigned');
+            filterLabel = 'Unassigned Issues';
+            break;
+        default:
+            filteredRows = [...allIssueRows];
+    }
+
+    // Update UI
+    if (filterIndicator) filterIndicator.classList.add('active');
+    if (filterEpicName) filterEpicName.textContent = filterLabel;
+    if (clearBtn) clearBtn.style.display = 'inline-block';
+
+    // Show issue table
+    const issueView = document.getElementById('issue-view');
+    const toggleBtn = document.getElementById('toggle-issues-btn');
+    if (issueView) issueView.style.display = 'block';
+    if (toggleBtn) toggleBtn.textContent = 'Hide all issues';
 
     // Re-render table
     renderTable();

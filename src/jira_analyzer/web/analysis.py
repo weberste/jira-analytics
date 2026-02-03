@@ -71,6 +71,7 @@ class WebAnalysisResult:
     jira_url: str
     epic_chart_data: EpicChartData
     issue_table_data: list[IssueRow]
+    issues_no_time_data: list[IssueRow]
 
 
 class AnalysisError(Exception):
@@ -226,6 +227,7 @@ def run_analysis(
     all_issue_keys = {issue.key for issue in issues}
     issues_with_time_keys = {e.issue_key for e in all_entries}
     unassigned_issue_keys = {e.issue_key for e in unassigned_entries}
+    issues_no_time_keys = all_issue_keys - issues_with_time_keys
 
     # Build chart data
     epic_chart_data = _build_epic_chart_data(normalized_entries)
@@ -233,19 +235,25 @@ def run_analysis(
     # Build issue table data
     issue_table_data = _build_issue_table_data(normalized_entries, config.jira_url)
 
+    # Build issues without time data
+    issues_no_time_data = _build_issues_no_time_data(
+        issues, issues_no_time_keys, config.jira_url
+    )
+
     return WebAnalysisResult(
         jql_query=jql,
         start_date=from_date,
         end_date=to_date,
         total_issues=total_issues,
         issues_with_time=len(issues_with_time_keys),
-        issues_with_no_time=total_issues - len(issues_with_time_keys),
+        issues_with_no_time=len(issues_no_time_keys),
         unassigned_issues=len(unassigned_issue_keys),
         entries=normalized_entries,
         from_cache=from_cache_flag,
         jira_url=config.jira_url,
         epic_chart_data=epic_chart_data,
         issue_table_data=issue_table_data,
+        issues_no_time_data=issues_no_time_data,
     )
 
 
@@ -327,3 +335,27 @@ def _build_issue_table_data(
         )
 
     return rows
+
+
+def _build_issues_no_time_data(
+    issues: list, issues_no_time_keys: set[str], jira_url: str
+) -> list[IssueRow]:
+    """Build issue rows for issues without time entries."""
+    rows = []
+    for issue in issues:
+        if issue.key in issues_no_time_keys:
+            rows.append(
+                IssueRow(
+                    issue_key=issue.key,
+                    issue_url=f"{jira_url.rstrip('/')}/browse/{issue.key}",
+                    issue_title=issue.summary,
+                    issue_type=issue.issue_type,
+                    epic_key=issue.epic_key,
+                    epic_title=issue.epic_title,
+                    developer="—",
+                    raw_hours=0.0,
+                    normalized_hours=0.0,
+                )
+            )
+    # Sort by issue key
+    return sorted(rows, key=lambda x: x.issue_key)

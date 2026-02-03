@@ -217,6 +217,28 @@ footer code {
     color: #666;
 }
 
+.summary-item.clickable {
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 10px;
+    margin: -10px;
+    transition: background-color 0.2s;
+}
+
+.summary-item.clickable:hover {
+    background-color: rgba(78, 121, 167, 0.1);
+}
+
+/* Clickable table cells */
+.clickable-cell {
+    cursor: pointer;
+    color: #4e79a7;
+}
+
+.clickable-cell:hover {
+    text-decoration: underline;
+}
+
 /* Chart and table layout */
 .chart-table-container {
     display: flex;

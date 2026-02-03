@@ -56,7 +56,8 @@
         // Initialize table functionality
         if (typeof initTable === 'function') {
             const issueData = {{ result.issue_table_data | tojson | safe }};
-            initTable(issueData);
+            const noTimeData = {{ result.issues_no_time_data | tojson | safe }};
+            initTable(issueData, noTimeData);
         }
         {% endif %}
     });
