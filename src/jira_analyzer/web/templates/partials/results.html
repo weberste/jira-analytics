@@ -42,7 +42,7 @@
                 <tbody>
                     {% for i in range(result.epic_chart_data.labels | length) %}
                     <tr>
-                        <td>{{ result.epic_chart_data.epic_keys[i] or '—' }}</td>
+                        <td>{% if result.epic_chart_data.epic_keys[i] %}<a href="{{ result.jira_url.rstrip('/') }}/browse/{{ result.epic_chart_data.epic_keys[i] }}" target="_blank">{{ result.epic_chart_data.epic_keys[i] }}</a>{% else %}—{% endif %}</td>
                         <td>{{ result.epic_chart_data.labels[i] }}</td>
                         <td class="text-right">{{ result.epic_chart_data.values[i] }}</td>
                         <td class="text-right">{{ result.epic_chart_data.percentages[i] }}%</td>
