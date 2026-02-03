@@ -130,8 +130,8 @@
 
 - [x] T042 [P] Implement saveFormState() and restoreFormState() in app.js using sessionStorage
 - [x] T043 [P] Add form state restore on page load in app.js
-- [ ] T044 [P] Polish CSS styling for responsive desktop layout in styles.css
-- [ ] T045 [P] Add favicon and page title in base.html
+- [x] T044 [P] Polish CSS styling for responsive desktop layout in styles.css
+- [x] T045 [P] Add favicon and page title in base.html
 - [ ] T046 Verify all error messages match contract specification
 - [ ] T047 Test full workflow: start server, run analysis, view charts, filter, export
 - [ ] T048 Update README.md with web interface documentation
