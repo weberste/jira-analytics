@@ -130,8 +130,17 @@ function renderTable() {
     const tbody = document.getElementById('issue-table-body');
     if (!tbody) return;
 
+    // Calculate total hours for percentage
+    const totalHours = filteredRows.reduce((sum, row) => sum + (parseFloat(row.normalized_hours) || 0), 0);
+
+    // Add percentage to each row
+    const dataWithPercentage = filteredRows.map(row => ({
+        ...row,
+        percentage: totalHours > 0 ? ((parseFloat(row.normalized_hours) || 0) / totalHours * 100) : 0
+    }));
+
     // Sort data
-    const sortedData = sortData(filteredRows, currentSort.column, currentSort.direction);
+    const sortedData = sortData(dataWithPercentage, currentSort.column, currentSort.direction);
 
     // Paginate
     const start = (currentPage - 1) * ROWS_PER_PAGE;
@@ -144,9 +153,9 @@ function renderTable() {
             <td><a href="${row.issue_url}" target="_blank">${row.issue_key}</a></td>
             <td>${truncate(row.issue_title, 50)}</td>
             <td>${row.issue_type}</td>
-            <td>${row.epic_title || '—'}</td>
-            <td>${row.developer}</td>
+            <td>${row.epic_key || '—'}</td>
             <td class="text-right">${row.normalized_hours}</td>
+            <td class="text-right">${row.percentage.toFixed(1)}%</td>
         </tr>
     `).join('');
 
@@ -170,8 +179,8 @@ function sortData(data, column, direction) {
         if (aVal == null) aVal = '';
         if (bVal == null) bVal = '';
 
-        // Numeric comparison for hours
-        if (column === 'normalized_hours' || column === 'raw_hours') {
+        // Numeric comparison for hours and percentage
+        if (column === 'normalized_hours' || column === 'raw_hours' || column === 'percentage') {
             aVal = parseFloat(aVal) || 0;
             bVal = parseFloat(bVal) || 0;
         } else {

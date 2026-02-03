@@ -97,9 +97,9 @@
                     <th class="sortable" data-column="issue_key">Issue</th>
                     <th class="sortable" data-column="issue_title">Title</th>
                     <th class="sortable" data-column="issue_type">Type</th>
-                    <th class="sortable" data-column="epic_title">Epic</th>
-                    <th class="sortable" data-column="developer">Developer</th>
+                    <th class="sortable" data-column="epic_key">Epic</th>
                     <th class="sortable sorted-desc" data-column="normalized_hours">Hours</th>
+                    <th class="sortable" data-column="percentage">%</th>
                 </tr>
             </thead>
             <tbody id="issue-table-body">
@@ -108,9 +108,9 @@
                     <td><a href="{{ row.issue_url }}" target="_blank">{{ row.issue_key }}</a></td>
                     <td>{{ row.issue_title[:50] }}{% if row.issue_title | length > 50 %}...{% endif %}</td>
                     <td>{{ row.issue_type }}</td>
-                    <td>{{ row.epic_title or '—' }}</td>
-                    <td>{{ row.developer }}</td>
+                    <td>{{ row.epic_key or '—' }}</td>
                     <td class="text-right">{{ row.normalized_hours }}</td>
+                    <td class="text-right">—</td>
                 </tr>
                 {% endfor %}
             </tbody>
