@@ -132,7 +132,7 @@ function filterByCategory(category) {
             break;
         case 'unassigned':
             // Filter to unassigned issues
-            filteredRows = allIssueRows.filter(row => row.developer === 'Unassigned');
+            filteredRows = allIssueRows.filter(row => row.unassigned);
             filterLabel = 'Unassigned Issues';
             break;
         default:

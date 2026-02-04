@@ -50,9 +50,9 @@ class IssueRow:
     issue_type: str
     epic_key: str | None
     epic_title: str | None
-    developer: str
     raw_hours: float
     normalized_hours: float
+    unassigned: bool = False
 
 
 @dataclass
@@ -297,12 +297,12 @@ def _build_epic_chart_data(entries: list[NormalizedTimeEntry]) -> EpicChartData:
 def _build_issue_table_data(
     entries: list[NormalizedTimeEntry], jira_url: str
 ) -> list[IssueRow]:
-    """Build issue table data from normalized entries."""
-    # Aggregate by (issue_key, developer)
-    issue_data: dict[tuple[str, str], dict] = {}
+    """Build issue table data from normalized entries, aggregated by issue."""
+    # Aggregate by issue_key (one row per issue)
+    issue_data: dict[str, dict] = {}
 
     for entry in entries:
-        key = (entry.issue_key, entry.developer)
+        key = entry.issue_key
         if key not in issue_data:
             issue_data[key] = {
                 "issue_key": entry.issue_key,
@@ -310,10 +310,12 @@ def _build_issue_table_data(
                 "issue_type": entry.issue_type,
                 "epic_key": entry.epic_key,
                 "epic_title": entry.epic_title,
-                "developer": entry.developer,
+                "unassigned": False,
                 "raw_hours": 0.0,
                 "normalized_hours": 0.0,
             }
+        if entry.developer == "Unassigned":
+            issue_data[key]["unassigned"] = True
         issue_data[key]["raw_hours"] += entry.raw_hours
         issue_data[key]["normalized_hours"] += entry.normalized_hours
 
@@ -328,9 +330,9 @@ def _build_issue_table_data(
                 issue_type=data["issue_type"],
                 epic_key=data["epic_key"],
                 epic_title=data["epic_title"],
-                developer=data["developer"],
                 raw_hours=round(data["raw_hours"], 2),
                 normalized_hours=round(data["normalized_hours"], 2),
+                unassigned=data["unassigned"],
             )
         )
 
@@ -352,7 +354,6 @@ def _build_issues_no_time_data(
                     issue_type=issue.issue_type,
                     epic_key=issue.epic_key,
                     epic_title=issue.epic_title,
-                    developer="—",
                     raw_hours=0.0,
                     normalized_hours=0.0,
                 )
