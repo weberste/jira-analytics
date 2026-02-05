@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JIRA Utilization Analyzer</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%234e79a7'/><path d='M50 5 A45 45 0 0 1 95 50 L50 50 Z' fill='%23f28e2c'/><path d='M50 5 A45 45 0 0 0 5 50 L50 50 Z' fill='%2376b7b2'/></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%230969da'/><path d='M50 5 A45 45 0 0 1 95 50 L50 50 Z' fill='%238250df'/><path d='M50 5 A45 45 0 0 0 5 50 L50 50 Z' fill='%23bf3989'/></svg>">
     <link rel="stylesheet" href="{{ url_for('main.static', filename='css/styles.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
@@ -12,6 +12,10 @@
     <div class="container">
         <header>
             <h1>JIRA Allocation Analyzer</h1>
+            <button class="theme-toggle" onclick="toggleTheme()" title="Switch theme">
+                <span class="theme-toggle-icon">◐</span>
+                <span class="theme-toggle-label">Theme</span>
+            </button>
         </header>
         <main>
             {% block content %}{% endblock %}
@@ -20,6 +24,44 @@
             <p>Use <code>jira-analyzer config show</code> to view configuration</p>
         </footer>
     </div>
+    <script>
+        // Theme management
+        function getPreferredTheme() {
+            const stored = localStorage.getItem('theme');
+            if (stored) return stored;
+            return 'clean'; // default
+        }
+
+        function setTheme(theme) {
+            if (theme === 'dashboard') {
+                document.documentElement.setAttribute('data-theme', 'dashboard');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+            localStorage.setItem('theme', theme);
+            updateToggleLabel(theme);
+        }
+
+        function toggleTheme() {
+            const current = getPreferredTheme();
+            const next = current === 'clean' ? 'dashboard' : 'clean';
+            setTheme(next);
+        }
+
+        function updateToggleLabel(theme) {
+            const label = document.querySelector('.theme-toggle-label');
+            const icon = document.querySelector('.theme-toggle-icon');
+            if (label) {
+                label.textContent = theme === 'dashboard' ? 'Dashboard' : 'Minimal';
+            }
+            if (icon) {
+                icon.textContent = theme === 'dashboard' ? '▦' : '○';
+            }
+        }
+
+        // Apply theme on load
+        setTheme(getPreferredTheme());
+    </script>
     <script src="{{ url_for('main.static', filename='js/charts.js') }}"></script>
     <script src="{{ url_for('main.static', filename='js/app.js') }}"></script>
     {% block scripts %}{% endblock %}
