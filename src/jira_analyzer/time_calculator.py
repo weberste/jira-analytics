@@ -195,14 +195,12 @@ def find_active_periods(
     in_active_since: datetime | None = None
 
     for transition in transitions:
-        entering_active = transition.to_status in active_statuses
-        leaving_active = (
-            transition.from_status in active_statuses if transition.from_status else False
-        )
+        entering_active = transition.to_status in active_statuses and not in_active_since
+        leaving_active = transition.to_status not in active_statuses and in_active_since
 
-        if entering_active and not in_active_since:
+        if entering_active:
             in_active_since = transition.timestamp
-        elif leaving_active and in_active_since:
+        elif leaving_active:
             # Find developer for this period
             developer = find_developer_at_time(
                 in_active_since,
