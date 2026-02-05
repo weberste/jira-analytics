@@ -1,8 +1,34 @@
 """JIRA API client with retry logic."""
 
-from datetime import datetime
+from datetime import date, datetime
 
 from jira import JIRA, JIRAError
+
+
+def build_date_filtered_jql(jql: str, start_date: date, end_date: date) -> str:
+    """Extend a JQL query with date filters to limit results to relevant issues.
+
+    Adds filters to catch:
+    - Issues with status changes during the period (even if updated later)
+    - Issues updated during the period (even without status changes)
+
+    Args:
+        jql: Original JQL query
+        start_date: Start of analysis period
+        end_date: End of analysis period
+
+    Returns:
+        Extended JQL query with date filters
+    """
+    start_str = start_date.isoformat()
+    end_str = end_date.isoformat()
+
+    date_filter = (
+        f'(status changed DURING ("{start_str}", "{end_str}") '
+        f'OR (updated >= "{start_str}" AND updated <= "{end_str}"))'
+    )
+
+    return f"({jql}) AND {date_filter}"
 from tenacity import (
     retry,
     retry_if_exception_type,

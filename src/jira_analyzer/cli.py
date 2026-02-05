@@ -19,7 +19,12 @@ from jira_analyzer.config import (
     _parse_time,
     _format_time,
 )
-from jira_analyzer.jira_client import JiraClient, AuthenticationError, RateLimitError
+from jira_analyzer.jira_client import (
+    JiraClient,
+    AuthenticationError,
+    RateLimitError,
+    build_date_filtered_jql,
+)
 from jira_analyzer.models import AnalysisResult
 from jira_analyzer.normalizer import normalize_time_entries
 from jira_analyzer.output import (
@@ -95,11 +100,15 @@ def utilization(
         print_error(str(e))
         raise typer.Exit(EXIT_CONFIG_ERROR)
 
+    # Build the actual JQL with date filters
+    raw_jql = build_date_filtered_jql(jql, start_date, end_date)
+    console.print(f"[dim]Query: {raw_jql}[/dim]")
+
     # Check cache first (unless --no-cache)
     raw_issues = None
     from_cache = False
     if not no_cache:
-        raw_issues = get_cached_issues(jql, start_date, end_date)
+        raw_issues = get_cached_issues(raw_jql, start_date, end_date)
         if raw_issues is not None:
             from_cache = True
 
@@ -113,7 +122,7 @@ def utilization(
             fetch_task = progress.add_task("Fetching issues...", total=None)
 
             try:
-                raw_issues = client.search_all_issues(jql)
+                raw_issues = client.search_all_issues(raw_jql)
                 progress.update(fetch_task, completed=len(raw_issues), total=len(raw_issues))
 
             except AuthenticationError as e:
@@ -135,7 +144,7 @@ def utilization(
 
         # Save to cache
         if raw_issues:
-            save_to_cache(jql, start_date, end_date, raw_issues)
+            save_to_cache(raw_jql, start_date, end_date, raw_issues)
 
         issues = [client._parse_issue(issue_dict) for issue_dict in raw_issues]
 

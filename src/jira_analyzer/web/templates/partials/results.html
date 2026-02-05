@@ -17,11 +17,14 @@
             <div class="value">{{ result.unassigned_issues }}</div>
             <div class="label">Unassigned</div>
         </div>
-        {% if result.from_cache %}
         <div class="summary-item">
+            {% if result.from_cache %}
             <span class="cache-indicator">(using cached data)</span>
+            {% endif %}
+            <div class="query-info" title="{{ result.raw_jql_query }}">
+                <code>{{ result.raw_jql_query | truncate(60) }}</code>
+            </div>
         </div>
-        {% endif %}
     </div>
 
     <!-- Chart and Epic Table -->

@@ -6,7 +6,12 @@ from datetime import date, datetime
 
 from jira_analyzer.cache import get_cached_issues, save_to_cache
 from jira_analyzer.config import Config, config_exists, load_config
-from jira_analyzer.jira_client import AuthenticationError, JiraClient, RateLimitError
+from jira_analyzer.jira_client import (
+    AuthenticationError,
+    JiraClient,
+    RateLimitError,
+    build_date_filtered_jql,
+)
 from jira_analyzer.models import NormalizedTimeEntry
 from jira_analyzer.normalizer import normalize_time_entries
 from jira_analyzer.time_calculator import calculate_raw_time
@@ -60,6 +65,7 @@ class WebAnalysisResult:
     """Extended analysis result with web-specific formatting."""
 
     jql_query: str
+    raw_jql_query: str
     start_date: date
     end_date: date
     total_issues: int
@@ -161,11 +167,14 @@ def run_analysis(
             f"Invalid configuration. Check your settings with 'jira-analyzer config show'. Error: {e}"
         )
 
+    # Build the actual JQL with date filters
+    raw_jql = build_date_filtered_jql(jql, from_date, to_date)
+
     # Check cache first
     raw_issues = None
     from_cache_flag = False
     if not no_cache:
-        raw_issues = get_cached_issues(jql, from_date, to_date)
+        raw_issues = get_cached_issues(raw_jql, from_date, to_date)
         if raw_issues is not None:
             from_cache_flag = True
 
@@ -176,7 +185,7 @@ def run_analysis(
     else:
         # Fetch from JIRA
         try:
-            raw_issues = client.search_all_issues(jql)
+            raw_issues = client.search_all_issues(raw_jql)
         except AuthenticationError:
             raise JiraAuthError(
                 "JIRA authentication failed. Check your credentials with 'jira-analyzer config show'."
@@ -190,7 +199,7 @@ def run_analysis(
 
         # Save to cache
         if raw_issues:
-            save_to_cache(jql, from_date, to_date, raw_issues)
+            save_to_cache(raw_jql, from_date, to_date, raw_issues)
 
         issues = [client._parse_issue(issue_dict) for issue_dict in raw_issues]
 
@@ -242,6 +251,7 @@ def run_analysis(
 
     return WebAnalysisResult(
         jql_query=jql,
+        raw_jql_query=raw_jql,
         start_date=from_date,
         end_date=to_date,
         total_issues=total_issues,
