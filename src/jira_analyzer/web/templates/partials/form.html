@@ -25,6 +25,13 @@
                 Don't use cached data
             </label>
         </div>
+        <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="track_epic_time" name="track_epic_time" value="1"
+                       {{ 'checked' if track_epic_time else '' }}>
+                Track time on epics
+            </label>
+        </div>
         <button type="submit" class="btn btn-primary" id="submit-btn">Analyze</button>
     </form>
 </div>

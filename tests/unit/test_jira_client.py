@@ -33,3 +33,23 @@ class TestBuildDateFilteredJql:
         assert 'status changed DURING ("2024-06-15", "2024-07-15")' in result
         assert " OR " in result
         assert " AND " in result
+
+    def test_excludes_epics_by_default(self):
+        """Test that epics are excluded by default."""
+        jql = "project = TEST"
+        start = date(2024, 1, 1)
+        end = date(2024, 1, 31)
+
+        result = build_date_filtered_jql(jql, start, end)
+
+        assert "type != Epic" in result
+
+    def test_includes_epics_when_requested(self):
+        """Test that epics are included when track_epic_time is True."""
+        jql = "project = TEST"
+        start = date(2024, 1, 1)
+        end = date(2024, 1, 31)
+
+        result = build_date_filtered_jql(jql, start, end, track_epic_time=True)
+
+        assert "type != Epic" not in result

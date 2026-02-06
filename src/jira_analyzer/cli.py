@@ -73,6 +73,7 @@ def utilization(
     output_file: Annotated[Optional[str], typer.Option("--output-file", help="File path for CSV output")] = None,
     show_incomplete: Annotated[bool, typer.Option("--show-incomplete", help="List issue keys with no time or no assignee")] = False,
     no_cache: Annotated[bool, typer.Option("--no-cache", help="Force fresh fetch from JIRA, bypassing cache")] = False,
+    track_epic_time: Annotated[bool, typer.Option("--track-epic-time", help="Include epic issues in time calculation (excluded by default)")] = False,
 ) -> None:
     """Analyze time utilization for issues matching a JQL query."""
     # Validate dates
@@ -101,7 +102,7 @@ def utilization(
         raise typer.Exit(EXIT_CONFIG_ERROR)
 
     # Build the actual JQL with date filters
-    raw_jql = build_date_filtered_jql(jql, start_date, end_date)
+    raw_jql = build_date_filtered_jql(jql, start_date, end_date, track_epic_time)
     console.print(f"[dim]Query: {raw_jql}[/dim]")
 
     # Check cache first (unless --no-cache)

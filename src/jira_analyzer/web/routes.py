@@ -58,6 +58,7 @@ def analyze():
     from_date_str = request.form.get("from_date", "").strip()
     to_date_str = request.form.get("to_date", "").strip()
     no_cache = request.form.get("no_cache") == "1"
+    track_epic_time = request.form.get("track_epic_time") == "1"
 
     # Validate inputs
     if not jql:
@@ -69,6 +70,7 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 400
 
     if not from_date_str or not to_date_str:
@@ -80,6 +82,7 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 400
 
     # Parse dates
@@ -94,6 +97,7 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 400
 
     try:
@@ -107,6 +111,7 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 400
 
     if from_date > to_date:
@@ -118,11 +123,12 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 400
 
     # Run analysis
     try:
-        result = run_analysis(jql, from_date, to_date, no_cache=no_cache)
+        result = run_analysis(jql, from_date, to_date, no_cache=no_cache, track_epic_time=track_epic_time)
     except ConfigNotFoundError as e:
         return render_template(
             "index.html",
@@ -132,6 +138,7 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 503
     except InvalidConfigError as e:
         return render_template(
@@ -142,6 +149,7 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 503
     except JiraAuthError as e:
         return render_template(
@@ -152,6 +160,7 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 401
     except JiraRateLimitError as e:
         return render_template(
@@ -162,6 +171,7 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 429
     except InvalidJqlError as e:
         return render_template(
@@ -172,6 +182,7 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 400
     except (NoIssuesFoundError, NoActivityFoundError) as e:
         return render_template(
@@ -182,6 +193,7 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 200
     except AnalysisError as e:
         return render_template(
@@ -192,6 +204,7 @@ def analyze():
             from_date=from_date_str,
             to_date=to_date_str,
             no_cache=no_cache,
+            track_epic_time=track_epic_time,
         ), 500
 
     # Render with results
@@ -203,6 +216,7 @@ def analyze():
         from_date=from_date_str,
         to_date=to_date_str,
         no_cache=no_cache,
+        track_epic_time=track_epic_time,
     )
 
 

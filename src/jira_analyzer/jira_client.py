@@ -5,7 +5,12 @@ from datetime import date, datetime
 from jira import JIRA, JIRAError
 
 
-def build_date_filtered_jql(jql: str, start_date: date, end_date: date) -> str:
+def build_date_filtered_jql(
+    jql: str,
+    start_date: date,
+    end_date: date,
+    track_epic_time: bool = False,
+) -> str:
     """Extend a JQL query with date filters to limit results to relevant issues.
 
     Adds filters to catch:
@@ -16,6 +21,7 @@ def build_date_filtered_jql(jql: str, start_date: date, end_date: date) -> str:
         jql: Original JQL query
         start_date: Start of analysis period
         end_date: End of analysis period
+        track_epic_time: If False (default), exclude epic issues from results
 
     Returns:
         Extended JQL query with date filters
@@ -28,7 +34,12 @@ def build_date_filtered_jql(jql: str, start_date: date, end_date: date) -> str:
         f'OR (updated >= "{start_str}" AND updated <= "{end_str}"))'
     )
 
-    return f"({jql}) AND {date_filter}"
+    result = f"({jql}) AND {date_filter}"
+
+    if not track_epic_time:
+        result += ' AND type != Epic'
+
+    return result
 from tenacity import (
     retry,
     retry_if_exception_type,

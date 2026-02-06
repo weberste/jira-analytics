@@ -133,6 +133,7 @@ def run_analysis(
     from_date: date,
     to_date: date,
     no_cache: bool = False,
+    track_epic_time: bool = False,
 ) -> WebAnalysisResult:
     """Run analysis and return web-formatted results.
 
@@ -141,6 +142,7 @@ def run_analysis(
         from_date: Start of analysis period
         to_date: End of analysis period
         no_cache: If True, bypass cache
+        track_epic_time: If True, include epic issues in time calculation
 
     Returns:
         WebAnalysisResult with chart and table data
@@ -168,7 +170,7 @@ def run_analysis(
         )
 
     # Build the actual JQL with date filters
-    raw_jql = build_date_filtered_jql(jql, from_date, to_date)
+    raw_jql = build_date_filtered_jql(jql, from_date, to_date, track_epic_time)
 
     # Check cache first
     raw_issues = None
