@@ -164,6 +164,19 @@ pytest -v                   # Verbose output
 pytest --cov=jira_analyzer  # With coverage
 ```
 
+### CLI Smoke Tests
+
+Run end-to-end tests against a real JIRA instance (cross-platform):
+
+```bash
+python tests/smoke_test_cli.py "project = MYPROJ" --from 2026-01-01 --to 2026-01-31
+
+# With verbose output
+python tests/smoke_test_cli.py "project = MYPROJ" --from 2026-01-01 --to 2026-01-31 -v
+```
+
+This tests all CLI option combinations and reports timing per test.
+
 ### Code Quality
 
 ```bash
