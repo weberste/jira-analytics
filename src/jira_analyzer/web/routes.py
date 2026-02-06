@@ -15,6 +15,7 @@ from jira_analyzer.web.analysis import (
     InvalidConfigError,
     InvalidJqlError,
     JiraAuthError,
+    JiraConnectionError,
     JiraRateLimitError,
     NoActivityFoundError,
     NoIssuesFoundError,
@@ -173,6 +174,17 @@ def analyze():
             no_cache=no_cache,
             track_epic_time=track_epic_time,
         ), 429
+    except JiraConnectionError as e:
+        return render_template(
+            "index.html",
+            has_config=config_exists(),
+            error=str(e),
+            jql=jql,
+            from_date=from_date_str,
+            to_date=to_date_str,
+            no_cache=no_cache,
+            track_epic_time=track_epic_time,
+        ), 503
     except InvalidJqlError as e:
         return render_template(
             "index.html",

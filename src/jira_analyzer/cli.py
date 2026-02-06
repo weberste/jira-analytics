@@ -22,6 +22,7 @@ from jira_analyzer.config import (
 from jira_analyzer.jira_client import (
     JiraClient,
     AuthenticationError,
+    ConnectionError as JiraConnectionError,
     RateLimitError,
     build_date_filtered_jql,
 )
@@ -133,6 +134,10 @@ def utilization(
             except RateLimitError as e:
                 progress.stop()
                 print_error("JIRA API rate limit exceeded after 3 retries. Try again later.")
+                raise typer.Exit(EXIT_API_ERROR)
+            except JiraConnectionError as e:
+                progress.stop()
+                print_error(str(e))
                 raise typer.Exit(EXIT_API_ERROR)
             except ValueError as e:
                 progress.stop()

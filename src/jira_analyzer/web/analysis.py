@@ -8,6 +8,7 @@ from jira_analyzer.cache import get_cached_issues, save_to_cache
 from jira_analyzer.config import Config, config_exists, load_config
 from jira_analyzer.jira_client import (
     AuthenticationError,
+    ConnectionError as JiraClientConnectionError,
     JiraClient,
     RateLimitError,
     build_date_filtered_jql,
@@ -110,6 +111,12 @@ class JiraRateLimitError(AnalysisError):
     pass
 
 
+class JiraConnectionError(AnalysisError):
+    """Cannot connect to JIRA server."""
+
+    pass
+
+
 class InvalidJqlError(AnalysisError):
     """Invalid JQL query."""
 
@@ -196,6 +203,8 @@ def run_analysis(
             raise JiraRateLimitError(
                 "JIRA rate limit exceeded. Please wait a moment and try again."
             )
+        except JiraClientConnectionError as e:
+            raise JiraConnectionError(str(e))
         except ValueError as e:
             raise InvalidJqlError(f"Invalid JQL query: {e}. Check your query syntax.")
 

@@ -63,6 +63,12 @@ class AuthenticationError(Exception):
     pass
 
 
+class ConnectionError(Exception):
+    """Raised when JIRA server cannot be reached."""
+
+    pass
+
+
 class JiraClient:
     """Client for interacting with JIRA Cloud API."""
 
@@ -78,11 +84,21 @@ class JiraClient:
                 self._client = JIRA(
                     server=self.config.jira_url,
                     basic_auth=(self.config.jira_email, self.config.jira_api_token),
+                    timeout=30,
                 )
             except JIRAError as e:
                 if e.status_code == 401:
                     raise AuthenticationError(
                         "Authentication failed. Check your email and API token."
+                    ) from e
+                raise
+            except Exception as e:
+                # Catch connection errors, DNS failures, etc.
+                error_msg = str(e).lower()
+                if "connection" in error_msg or "resolve" in error_msg or "timeout" in error_msg:
+                    raise ConnectionError(
+                        f"Cannot connect to JIRA server at {self.config.jira_url}. "
+                        "Check the URL and your network connection."
                     ) from e
                 raise
         return self._client
