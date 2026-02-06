@@ -239,6 +239,33 @@ footer code {
     gap: 20px;
 }
 
+.form-row-controls {
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.form-row-controls .form-group {
+    margin-bottom: 0;
+}
+
+.form-row-controls .checkbox-group {
+    display: flex;
+    align-items: center;
+    padding-bottom: 0;
+    height: 42px; /* Match input height */
+}
+
+.form-row-controls .checkbox-group .checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.form-row-controls .form-group-btn {
+    margin-left: auto;
+}
+
 .form-row .form-group {
     flex: 1;
 }

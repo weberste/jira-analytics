@@ -6,33 +6,35 @@
                    placeholder='e.g., project = MYPROJ AND sprint = "Sprint 23"'
                    value="{{ jql or '' }}" required>
         </div>
-        <div class="form-row">
+        <div class="form-row form-row-controls">
             <div class="form-group">
-                <label for="from_date">From Date</label>
+                <label for="from_date">From</label>
                 <input type="date" id="from_date" name="from_date"
                        value="{{ from_date or '' }}" required>
             </div>
             <div class="form-group">
-                <label for="to_date">To Date</label>
+                <label for="to_date">To</label>
                 <input type="date" id="to_date" name="to_date"
                        value="{{ to_date or '' }}" required>
             </div>
+            <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="no_cache" name="no_cache" value="1"
+                           {{ 'checked' if no_cache else '' }}>
+                    Don't use cached data
+                </label>
+            </div>
+            <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="track_epic_time" name="track_epic_time" value="1"
+                           {{ 'checked' if track_epic_time else '' }}>
+                    Track time on epics
+                </label>
+            </div>
+            <div class="form-group form-group-btn">
+                <button type="submit" class="btn btn-primary" id="submit-btn">Analyze</button>
+            </div>
         </div>
-        <div class="form-group checkbox-group">
-            <label class="checkbox-label">
-                <input type="checkbox" id="no_cache" name="no_cache" value="1"
-                       {{ 'checked' if no_cache else '' }}>
-                Don't use cached data
-            </label>
-        </div>
-        <div class="form-group checkbox-group">
-            <label class="checkbox-label">
-                <input type="checkbox" id="track_epic_time" name="track_epic_time" value="1"
-                       {{ 'checked' if track_epic_time else '' }}>
-                Track time on epics
-            </label>
-        </div>
-        <button type="submit" class="btn btn-primary" id="submit-btn">Analyze</button>
     </form>
 </div>
 
