@@ -187,6 +187,8 @@ mypy src/                   # Type checking
 
 ### Project Structure
 
+See [docs/architecture.md](docs/architecture.md) for component and sequence diagrams.
+
 ```
 src/jira_analyzer/
 ├── cli.py              # Typer CLI commands
