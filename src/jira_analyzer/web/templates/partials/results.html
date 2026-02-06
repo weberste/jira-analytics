@@ -1,4 +1,13 @@
 <div class="results-section">
+    <!-- Query Info Bar -->
+    <div class="query-bar">
+        <span class="query-label">Raw Query:</span>
+        <code class="query-text">{{ result.raw_jql_query }}</code>
+        {% if result.from_cache %}
+        <span class="cache-badge" title="Results loaded from cache">⚡ Cached data used</span>
+        {% endif %}
+    </div>
+
     <!-- Summary Panel -->
     <div class="summary-panel">
         <div class="summary-item clickable" onclick="filterByCategory('all')" title="Click to show all issues">
@@ -16,14 +25,6 @@
         <div class="summary-item clickable" onclick="filterByCategory('unassigned')" title="Click to show unassigned issues">
             <div class="value">{{ result.unassigned_issues }}</div>
             <div class="label">Unassigned</div>
-        </div>
-        <div class="summary-item">
-            {% if result.from_cache %}
-            <span class="cache-indicator">(using cached data)</span>
-            {% endif %}
-            <div class="query-info" title="{{ result.raw_jql_query }}">
-                <code>{{ result.raw_jql_query | truncate(60) }}</code>
-            </div>
         </div>
     </div>
 
