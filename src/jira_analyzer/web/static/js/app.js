@@ -37,10 +37,10 @@ function toggleIssueTable() {
 
     if (issueView.style.display === 'none') {
         issueView.style.display = 'block';
-        toggleBtn.textContent = 'Hide all issues';
+        toggleBtn.textContent = 'Hide issue list';
     } else {
         issueView.style.display = 'none';
-        toggleBtn.textContent = 'Show all issues';
+        toggleBtn.textContent = 'Show issue list';
     }
 }
 
@@ -76,7 +76,7 @@ function filterTableByEpic(epicKey, epicName) {
     const issueView = document.getElementById('issue-view');
     const toggleBtn = document.getElementById('toggle-issues-btn');
     if (issueView) issueView.style.display = 'block';
-    if (toggleBtn) toggleBtn.textContent = 'Hide all issues';
+    if (toggleBtn) toggleBtn.textContent = 'Hide issue list';
 
     // Re-render table
     renderTable();
@@ -116,7 +116,7 @@ function filterByCategory(category) {
 
     switch (category) {
         case 'all':
-            // Show all issues (with time + no time)
+            // Show issue list (with time + no time)
             filteredRows = [...allIssueRows, ...noTimeRows];
             filterLabel = 'All Issues';
             break;
@@ -148,7 +148,7 @@ function filterByCategory(category) {
     const issueView = document.getElementById('issue-view');
     const toggleBtn = document.getElementById('toggle-issues-btn');
     if (issueView) issueView.style.display = 'block';
-    if (toggleBtn) toggleBtn.textContent = 'Hide all issues';
+    if (toggleBtn) toggleBtn.textContent = 'Hide issue list';
 
     // Re-render table
     renderTable();
