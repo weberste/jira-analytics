@@ -371,7 +371,7 @@ def _build_issues_no_time_data(
                 IssueRow(
                     issue_key=issue.key,
                     issue_url=f"{jira_url.rstrip('/')}/browse/{issue.key}",
-                    issue_title=issue.summary,
+                    issue_title=issue.title,
                     issue_type=issue.issue_type,
                     epic_key=issue.epic_key,
                     epic_title=issue.epic_title,

@@ -6,12 +6,8 @@ from datetime import date, datetime, time, timedelta
 
 from dateutil.rrule import DAILY, rrule, MO, TU, WE, TH, FR
 
+from jira_analyzer.config import DEFAULT_WORKDAY_START, DEFAULT_WORKDAY_END
 from jira_analyzer.models import AssigneeChange, Issue, RawTimeEntry, StatusTransition
-
-
-# Default workday boundaries (used when no config provided)
-DEFAULT_WORKDAY_START = time(8, 0)  # 8:00 AM
-DEFAULT_WORKDAY_END = time(16, 0)  # 4:00 PM
 
 
 @dataclass
@@ -201,16 +197,7 @@ def find_active_periods(
         if entering_active:
             in_active_since = transition.timestamp
         elif leaving_active:
-            # Find developer for this period
-            developer = find_developer_at_time(
-                in_active_since,
-                issue.assignee_history,
-                issue.current_developer,
-                issue.current_assignee,
-                developer_field,
-            )
-
-            # Check for reassignments during this period
+            # Split period by any reassignments during this active period
             periods.extend(
                 split_period_by_reassignments(
                     in_active_since,

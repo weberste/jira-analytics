@@ -165,25 +165,6 @@ class JiraClient:
             "changelog": issue.raw.get("changelog", {}),
         }
 
-    def fetch_all_issues(self, jql: str, progress_callback=None) -> list[Issue]:
-        """Fetch all issues matching JQL query.
-
-        Args:
-            jql: JQL query string
-            progress_callback: Optional callback(fetched, total) for progress updates
-                              (Note: total is not available with enhanced search API)
-
-        Returns:
-            List of Issue objects
-        """
-        # Library handles pagination internally when maxResults=0
-        all_issues = self.search_all_issues(jql)
-
-        if progress_callback:
-            progress_callback(len(all_issues), len(all_issues))
-
-        return [self._parse_issue(issue_dict) for issue_dict in all_issues]
-
     def _parse_issue(self, issue_dict: dict) -> Issue:
         """Parse raw issue dictionary into Issue model."""
         fields = issue_dict.get("fields", {})

@@ -2,7 +2,7 @@
 
 import sys
 from datetime import date, datetime
-from typing import Annotated, Optional
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -71,7 +71,7 @@ def utilization(
     to_date: Annotated[str, typer.Option("--to", "-t", help="End date (YYYY-MM-DD)")],
     by_issue: Annotated[bool, typer.Option("--by-issue", help="Show detailed per-issue breakdown (default is epic aggregation)")] = False,
     output: Annotated[str, typer.Option("--output", "-o", help="Output format: table or csv")] = "table",
-    output_file: Annotated[Optional[str], typer.Option("--output-file", help="File path for CSV output")] = None,
+    output_file: Annotated[str | None, typer.Option("--output-file", help="File path for CSV output")] = None,
     show_incomplete: Annotated[bool, typer.Option("--show-incomplete", help="List issue keys with no time or no assignee")] = False,
     no_cache: Annotated[bool, typer.Option("--no-cache", help="Force fresh fetch from JIRA, bypassing cache")] = False,
     track_epic_time: Annotated[bool, typer.Option("--track-epic-time", help="Include epic issues in time calculation (excluded by default)")] = False,
@@ -224,7 +224,7 @@ def utilization(
             _print_epic_summary(result, show_incomplete=show_incomplete)
 
 
-def _output_csv(result: AnalysisResult, output_file: Optional[str]) -> None:
+def _output_csv(result: AnalysisResult, output_file: str | None) -> None:
     """Output results as CSV."""
     import csv
     import sys

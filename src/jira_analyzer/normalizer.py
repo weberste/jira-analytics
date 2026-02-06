@@ -1,12 +1,10 @@
-"""Normalize raw time entries to 8-hour workdays per developer."""
+"""Normalize raw time entries to max hours per developer per day."""
 
 from collections import defaultdict
 from datetime import date
 
+from jira_analyzer.config import DEFAULT_MAX_NORMALIZED_HOURS
 from jira_analyzer.models import Issue, NormalizedTimeEntry, RawTimeEntry
-
-
-DEFAULT_MAX_NORMALIZED_HOURS = 7.0  # Assume no one works at 100% capacity
 
 
 def normalize_time_entries(
@@ -78,42 +76,3 @@ def normalize_time_entries(
     normalized.sort(key=lambda e: (e.date, e.developer, e.issue_key))
 
     return normalized
-
-
-def aggregate_by_issue(entries: list[NormalizedTimeEntry]) -> list[NormalizedTimeEntry]:
-    """Aggregate normalized entries by issue (sum across dates).
-
-    Useful for summary views that don't need day-by-day breakdown.
-    """
-    # Group by (issue_key, developer)
-    by_issue_dev: dict[tuple[str, str], list[NormalizedTimeEntry]] = defaultdict(list)
-    for entry in entries:
-        key = (entry.issue_key, entry.developer)
-        by_issue_dev[key].append(entry)
-
-    aggregated: list[NormalizedTimeEntry] = []
-
-    for (issue_key, developer), group in by_issue_dev.items():
-        # Use first entry as template
-        template = group[0]
-        total_raw = sum(e.raw_hours for e in group)
-        total_normalized = sum(e.normalized_hours for e in group)
-
-        aggregated.append(
-            NormalizedTimeEntry(
-                issue_key=issue_key,
-                issue_title=template.issue_title,
-                issue_type=template.issue_type,
-                epic_key=template.epic_key,
-                epic_title=template.epic_title,
-                developer=developer,
-                date=min(e.date for e in group),  # Use earliest date
-                raw_hours=round(total_raw, 2),
-                normalized_hours=round(total_normalized, 2),
-            )
-        )
-
-    # Sort by issue key, then developer
-    aggregated.sort(key=lambda e: (e.issue_key, e.developer))
-
-    return aggregated
