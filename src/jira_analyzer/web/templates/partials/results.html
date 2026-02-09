@@ -47,7 +47,7 @@
                     {% for i in range(result.epic_chart_data.labels | length) %}
                     <tr>
                         <td>{% if result.epic_chart_data.epic_keys[i] %}<a href="{{ result.jira_url.rstrip('/') }}/browse/{{ result.epic_chart_data.epic_keys[i] }}" target="_blank">{{ result.epic_chart_data.epic_keys[i] }}</a>{% else %}—{% endif %}</td>
-                        <td class="clickable-cell" onclick="filterTableByEpic({{ result.epic_chart_data.epic_keys[i] | tojson }}, '{{ result.epic_chart_data.labels[i] }}')" title="Click to filter issues">{{ result.epic_chart_data.labels[i] }}</td>
+                        <td class="clickable-cell" onclick='filterTableByEpic({{ result.epic_chart_data.epic_keys[i] | tojson }}, {{ result.epic_chart_data.labels[i] | tojson }})' title="Click to filter issues">{{ result.epic_chart_data.labels[i] }}</td>
                         <td class="text-right">{{ result.epic_chart_data.values[i] }}</td>
                         <td class="text-right">{{ result.epic_chart_data.percentages[i] }}%</td>
                     </tr>
