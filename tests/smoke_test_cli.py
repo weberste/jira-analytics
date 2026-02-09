@@ -10,13 +10,13 @@ import time
 def run_tests(jql: str, from_date: str, to_date: str, verbose: bool = False):
     tests = [
         ("help", ["--help"]),
-        ("analyze help", ["analyze", "--help"]),
+        ("analyze help", ["utilization", "--help"]),
         ("config show", ["config", "show"]),
-        ("basic analyze", ["analyze", jql, "--from", from_date, "--to", to_date]),
-        ("analyze no-cache", ["analyze", jql, "--from", from_date, "--to", to_date, "--no-cache"]),
-        ("analyze track-epic-time", ["analyze", jql, "--from", from_date, "--to", to_date, "--track-epic-time"]),
-        ("analyze csv output", ["analyze", jql, "--from", from_date, "--to", to_date, "--output", "csv"]),
-        ("analyze all options", ["analyze", jql, "--from", from_date, "--to", to_date, "--no-cache", "--track-epic-time", "--output", "csv"]),
+        ("basic analyze", ["utilization", "--jql", jql, "--from", from_date, "--to", to_date]),
+        ("analyze no-cache", ["utilization", "--jql", jql, "--from", from_date, "--to", to_date, "--no-cache"]),
+        ("analyze track-epic-time", ["utilization", "--jql", jql, "--from", from_date, "--to", to_date, "--track-epic-time"]),
+        ("analyze csv output", ["utilization", "--jql", jql, "--from", from_date, "--to", to_date, "--output", "csv"]),
+        ("analyze all options", ["utilization", "--jql", jql, "--from", from_date, "--to", to_date, "--no-cache", "--track-epic-time", "--output", "csv"]),
     ]
 
     failed = []
