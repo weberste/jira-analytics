@@ -6,7 +6,7 @@ let epicChart = null;
 let chartData = null;
 
 /**
- * Initialize the epic allocation pie chart
+ * Initialize the epic allocation stacked bar chart
  * @param {string} canvasId - ID of the canvas element
  * @param {Object} data - EpicChartData object with labels, values, colors, etc.
  */
@@ -23,20 +23,35 @@ function initEpicChart(canvasId, data) {
 
     const ctx = canvas.getContext('2d');
 
+    // Create one dataset per epic for stacked bar
+    const datasets = data.labels.map((label, index) => ({
+        label: label,
+        data: [data.values[index]],
+        backgroundColor: data.colors[index],
+        borderWidth: 0,
+        borderSkipped: false,
+    }));
+
     epicChart = new Chart(ctx, {
-        type: 'pie',
+        type: 'bar',
         data: {
-            labels: data.labels,
-            datasets: [{
-                data: data.values,
-                backgroundColor: data.colors,
-                borderWidth: 2,
-                borderColor: '#fff'
-            }]
+            labels: [''],  // Single bar
+            datasets: datasets
         },
         options: {
+            indexAxis: 'y',  // Horizontal bar
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: true,
+                    display: false,  // Hide x-axis
+                },
+                y: {
+                    stacked: true,
+                    display: false,  // Hide y-axis
+                }
+            },
             plugins: {
                 legend: {
                     display: false  // We have our own table
@@ -44,7 +59,7 @@ function initEpicChart(canvasId, data) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            const index = context.dataIndex;
+                            const index = context.datasetIndex;
                             const label = data.labels[index];
                             const value = data.values[index];
                             const percentage = data.percentages[index];
@@ -53,9 +68,12 @@ function initEpicChart(canvasId, data) {
                     }
                 }
             },
+            onHover: function(event, elements) {
+                event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+            },
             onClick: function(event, elements) {
                 if (elements.length > 0) {
-                    const index = elements[0].index;
+                    const index = elements[0].datasetIndex;
                     const epicKey = data.epic_keys[index];
                     const epicName = data.labels[index];
                     filterTableByEpic(epicKey, epicName);

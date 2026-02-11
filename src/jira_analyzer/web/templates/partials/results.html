@@ -1,13 +1,13 @@
-<div class="results-section">
-    <!-- Query Info Bar -->
-    <div class="query-bar">
-        <span class="query-label">Raw Query:</span>
-        <code class="query-text">{{ result.raw_jql_query }}</code>
-        {% if result.from_cache %}
-        <span class="cache-badge" title="Results loaded from cache">⚡ Cached data used</span>
-        {% endif %}
-    </div>
+<!-- Query Info Bar -->
+<div class="query-bar query-bar-subtle">
+    <span class="query-label">Raw Query:</span>
+    <code class="query-text">{{ result.raw_jql_query }}</code>
+    {% if result.from_cache %}
+    <span class="cache-badge" title="Results loaded from cache">⚡ Cached</span>
+    {% endif %}
+</div>
 
+<div class="results-section">
     <!-- Summary Panel -->
     <div class="summary-panel">
         <div class="summary-item clickable" onclick="filterByCategory('all')" title="Click to show all issues">
@@ -28,40 +28,43 @@
         </div>
     </div>
 
-    <!-- Chart and Epic Table -->
-    <div class="chart-table-container">
-        <div class="chart-container">
-            <canvas id="epic-chart"></canvas>
-        </div>
-        <div class="epic-table-container">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Epic</th>
-                        <th>Title</th>
-                        <th class="text-right">Hours</th>
-                        <th class="text-right">%</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for i in range(result.epic_chart_data.labels | length) %}
-                    <tr>
-                        <td>{% if result.epic_chart_data.epic_keys[i] %}<a href="{{ result.jira_url.rstrip('/') }}/browse/{{ result.epic_chart_data.epic_keys[i] }}" target="_blank">{{ result.epic_chart_data.epic_keys[i] }}</a>{% else %}—{% endif %}</td>
-                        <td class="clickable-cell truncate" onclick='filterTableByEpic({{ result.epic_chart_data.epic_keys[i] | tojson }}, {{ result.epic_chart_data.labels[i] | tojson }})' title="{{ result.epic_chart_data.labels[i] }}">{{ result.epic_chart_data.labels[i] }}</td>
-                        <td class="text-right">{{ result.epic_chart_data.values[i] }}</td>
-                        <td class="text-right">{{ result.epic_chart_data.percentages[i] }}%</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-                <tfoot>
-                    <tr class="total-row">
-                        <td colspan="2">TOTAL</td>
-                        <td class="text-right">{{ result.epic_chart_data.values | sum | round(1) }}</td>
-                        <td class="text-right">100%</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+    <!-- Stacked Bar Chart -->
+    <div class="stacked-chart-container">
+        <canvas id="epic-chart"></canvas>
+    </div>
+
+    <!-- Epic Table -->
+    <div class="epic-table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 4px; padding: 0;"></th>
+                    <th>Epic</th>
+                    <th>Title</th>
+                    <th class="text-right">Hours</th>
+                    <th class="text-right">%</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in range(result.epic_chart_data.labels | length) %}
+                <tr>
+                    <td style="width: 4px; padding: 0; background: {{ result.epic_chart_data.colors[i] }};"></td>
+                    <td>{% if result.epic_chart_data.epic_keys[i] %}<a href="{{ result.jira_url.rstrip('/') }}/browse/{{ result.epic_chart_data.epic_keys[i] }}" target="_blank">{{ result.epic_chart_data.epic_keys[i] }}</a>{% else %}—{% endif %}</td>
+                    <td class="clickable-cell truncate" onclick='filterTableByEpic({{ result.epic_chart_data.epic_keys[i] | tojson }}, {{ result.epic_chart_data.labels[i] | tojson }})' title="{{ result.epic_chart_data.labels[i] }}">{{ result.epic_chart_data.labels[i] }}</td>
+                    <td class="text-right">{{ result.epic_chart_data.values[i] }}</td>
+                    <td class="text-right">{{ result.epic_chart_data.percentages[i] }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td style="width: 4px; padding: 0;"></td>
+                    <td colspan="2">TOTAL</td>
+                    <td class="text-right">{{ result.epic_chart_data.values | sum | round(1) }}</td>
+                    <td class="text-right">100%</td>
+                </tr>
+            </tfoot>
+        </table>
     </div>
 
     <!-- Actions Bar -->
