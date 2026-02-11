@@ -563,16 +563,7 @@ footer code {
 
 /* ===== Issue Table Section ===== */
 .issue-table-section {
-    margin-top: 24px;
-    background: var(--bg-tertiary);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-light);
-    overflow: hidden;
-}
-
-.issue-table-section .data-table th:first-child,
-.issue-table-section .data-table th:last-child {
-    border-radius: 0;
+    overflow-x: auto;
 }
 
 /* ===== Filter Indicator ===== */
@@ -602,8 +593,11 @@ footer code {
     display: flex;
     justify-content: center;
     gap: 6px;
-    padding: 16px;
     background: var(--bg-secondary);
+}
+
+.pagination:has(button) {
+    padding: 16px;
     border-top: 1px solid var(--border-light);
 }
 

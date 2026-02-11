@@ -67,6 +67,10 @@
         </table>
     </div>
 
+</div>
+
+<!-- Issue List Section -->
+<div class="results-section">
     <!-- Actions Bar -->
     <div class="actions-bar">
         <div>
@@ -115,6 +119,13 @@
                 </tr>
                 {% endfor %}
             </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="4">TOTAL</td>
+                    <td class="text-right">{{ result.epic_chart_data.values | sum | round(1) }}</td>
+                    <td class="text-right">100%</td>
+                </tr>
+            </tfoot>
         </table>
 
         <!-- Pagination -->
