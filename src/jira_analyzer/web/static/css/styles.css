@@ -403,7 +403,7 @@ footer code {
 
 .summary-item {
     background: var(--bg-tertiary);
-    padding: 16px;
+    padding: 10px 14px;
     border-radius: var(--radius-md);
     text-align: center;
     border: 1px solid var(--border-light);
@@ -411,18 +411,18 @@ footer code {
 }
 
 .summary-item .value {
-    font-size: 1.75rem;
+    font-size: 1.35rem;
     font-weight: 700;
     color: var(--accent-primary);
     line-height: 1.2;
 }
 
 .summary-item .label {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-top: 4px;
+    margin-top: 2px;
 }
 
 .summary-item.clickable {
