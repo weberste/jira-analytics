@@ -47,7 +47,7 @@
                     {% for i in range(result.epic_chart_data.labels | length) %}
                     <tr>
                         <td>{% if result.epic_chart_data.epic_keys[i] %}<a href="{{ result.jira_url.rstrip('/') }}/browse/{{ result.epic_chart_data.epic_keys[i] }}" target="_blank">{{ result.epic_chart_data.epic_keys[i] }}</a>{% else %}—{% endif %}</td>
-                        <td class="clickable-cell" onclick='filterTableByEpic({{ result.epic_chart_data.epic_keys[i] | tojson }}, {{ result.epic_chart_data.labels[i] | tojson }})' title="Click to filter issues">{{ result.epic_chart_data.labels[i] }}</td>
+                        <td class="clickable-cell truncate" onclick='filterTableByEpic({{ result.epic_chart_data.epic_keys[i] | tojson }}, {{ result.epic_chart_data.labels[i] | tojson }})' title="{{ result.epic_chart_data.labels[i] }}">{{ result.epic_chart_data.labels[i] }}</td>
                         <td class="text-right">{{ result.epic_chart_data.values[i] }}</td>
                         <td class="text-right">{{ result.epic_chart_data.percentages[i] }}%</td>
                     </tr>
@@ -96,15 +96,15 @@
                     <th class="sortable" data-column="issue_title">Title</th>
                     <th class="sortable" data-column="issue_type">Type</th>
                     <th class="sortable" data-column="epic_key">Epic</th>
-                    <th class="sortable sorted-desc" data-column="normalized_hours">Hours</th>
-                    <th class="sortable" data-column="percentage">%</th>
+                    <th class="sortable sorted-desc text-right" data-column="normalized_hours">Hours</th>
+                    <th class="sortable text-right" data-column="percentage">%</th>
                 </tr>
             </thead>
             <tbody id="issue-table-body">
                 {% for row in result.issue_table_data %}
                 <tr data-epic-key="{{ row.epic_key or '' }}">
                     <td><a href="{{ row.issue_url }}" target="_blank">{{ row.issue_key }}</a></td>
-                    <td>{{ row.issue_title[:50] }}{% if row.issue_title | length > 50 %}...{% endif %}</td>
+                    <td class="truncate" title="{{ row.issue_title }}">{{ row.issue_title }}</td>
                     <td>{{ row.issue_type }}</td>
                     <td>{{ row.epic_key or '—' }}</td>
                     <td class="text-right">{{ row.normalized_hours }}</td>

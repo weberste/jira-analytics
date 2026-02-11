@@ -182,7 +182,7 @@ function renderTable() {
     tbody.innerHTML = pageData.map(row => `
         <tr data-epic-key="${row.epic_key || ''}">
             <td><a href="${row.issue_url}" target="_blank">${row.issue_key}</a></td>
-            <td>${truncate(row.issue_title, 50)}</td>
+            <td class="truncate" title="${row.issue_title}">${row.issue_title}</td>
             <td>${row.issue_type}</td>
             <td>${row.epic_key || '—'}</td>
             <td class="text-right">${row.normalized_hours}</td>

@@ -569,6 +569,14 @@ footer code {
     opacity: 0.8;
 }
 
+/* Truncate text with ellipsis */
+.truncate {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* ===== Issue Table Section ===== */
 .issue-table-section {
     margin-top: 24px;
