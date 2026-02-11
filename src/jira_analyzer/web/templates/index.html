@@ -1,14 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if not has_config %}
+{% if is_demo %}
+<div class="demo-banner">
+    This is demo mode with sample data. <a href="/">Exit demo</a>
+</div>
+{% endif %}
+
+{% if not has_config and not is_demo %}
 <div class="setup-instructions">
     <h2>Setup Required</h2>
     <p>JIRA credentials are not configured. Please run the following command in your terminal:</p>
     <code>jira-analyzer config init</code>
     <p>Then refresh this page.</p>
+    <p style="margin-top: 20px;">Or try the demo mode to see how it works:</p>
+    <a href="/demo" class="btn btn-primary">Try Demo</a>
 </div>
-{% else %}
+{% elif has_config or is_demo %}
 
 {% include "partials/error.html" %}
 {% include "partials/form.html" %}

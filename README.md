@@ -129,6 +129,17 @@ The web interface provides:
 - Sortable issue breakdown table with pagination
 - Click chart segments to filter by epic
 - CSV export of results
+- **Demo mode** - try the interface without JIRA credentials
+
+#### Demo Mode
+
+To explore the web interface without configuring JIRA credentials:
+
+```bash
+jira-analyzer web --open
+```
+
+Then click "Try Demo" on the setup page, or navigate directly to `http://127.0.0.1:5000/demo`.
 
 ## Development
 

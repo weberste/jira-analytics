@@ -21,6 +21,7 @@ from jira_analyzer.web.analysis import (
     NoIssuesFoundError,
     run_analysis,
 )
+from jira_analyzer.web.demo import generate_demo_result
 
 
 bp = Blueprint("main", __name__, static_folder="static", template_folder="templates")
@@ -49,6 +50,21 @@ def index():
     """Render the main analysis page."""
     has_config = config_exists()
     return render_template("index.html", has_config=has_config)
+
+
+@bp.route("/demo")
+def demo():
+    """Load demo mode with sample data."""
+    result = generate_demo_result()
+    return render_template(
+        "index.html",
+        has_config=True,
+        result=result,
+        jql=result.jql_query,
+        from_date=result.start_date.isoformat(),
+        to_date=result.end_date.isoformat(),
+        is_demo=True,
+    )
 
 
 @bp.route("/analyze", methods=["POST"])

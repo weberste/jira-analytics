@@ -694,6 +694,27 @@ footer code {
 }
 
 /* ===== Setup Instructions ===== */
+/* Demo banner */
+.demo-banner {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    padding: 12px 24px;
+    text-align: center;
+    margin-bottom: 24px;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+}
+
+.demo-banner a {
+    color: white;
+    text-decoration: underline;
+    margin-left: 8px;
+}
+
+.demo-banner a:hover {
+    opacity: 0.9;
+}
+
 .setup-instructions {
     background: rgba(191, 135, 0, 0.1);
     padding: 24px;
