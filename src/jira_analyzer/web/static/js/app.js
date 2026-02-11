@@ -13,6 +13,12 @@ let currentPage = 1;
 let currentSort = { column: 'normalized_hours', direction: 'desc' };
 let currentFilter = null;
 
+// Epic grouping state
+let epicGroups = [];
+let selectedEpicIndices = new Set();
+let jiraBaseUrl = '';
+let groupIdCounter = 0;
+
 /**
  * Initialize the issue table with data
  * @param {Array} data - Array of IssueRow objects (with time)
@@ -367,4 +373,317 @@ function restoreFormState() {
     } catch (e) {
         console.error('Error restoring form state:', e);
     }
+}
+
+// ===== Epic Grouping =====
+
+/**
+ * Initialize the epic table with JS rendering
+ * @param {string} jiraUrl - Base JIRA URL
+ */
+function initEpicTable(jiraUrl) {
+    jiraBaseUrl = jiraUrl.replace(/\/+$/, '');
+    renderEpicTable();
+}
+
+/**
+ * Convert hex color to HSL
+ */
+function hexToHSL(hex) {
+    hex = hex.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16) / 255;
+    const g = parseInt(hex.substring(2, 4), 16) / 255;
+    const b = parseInt(hex.substring(4, 6), 16) / 255;
+
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) {
+        h = s = 0;
+    } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+        }
+    }
+    return { h: h * 360, s: s * 100, l: l * 100 };
+}
+
+/**
+ * Convert HSL to hex color
+ */
+function hslToHex(h, s, l) {
+    h /= 360; s /= 100; l /= 100;
+    let r, g, b;
+    if (s === 0) {
+        r = g = b = l;
+    } else {
+        const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1/6) return p + (q - p) * 6 * t;
+            if (t < 1/2) return q;
+            if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+            return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+    }
+    const toHex = x => {
+        const hex = Math.round(x * 255).toString(16);
+        return hex.length === 1 ? '0' + hex : hex;
+    };
+    return '#' + toHex(r) + toHex(g) + toHex(b);
+}
+
+/**
+ * Generate color shades for grouped epics
+ * @param {string} hexColor - Base hex color
+ * @param {number} count - Number of shades needed
+ * @returns {string[]} Array of hex color strings
+ */
+function generateColorShades(hexColor, count) {
+    if (count === 1) return [hexColor];
+    const hsl = hexToHSL(hexColor);
+    const spread = 15;
+    const minL = Math.max(20, hsl.l - spread);
+    const maxL = Math.min(85, hsl.l + spread);
+    const step = (maxL - minL) / (count - 1);
+    const shades = [];
+    for (let i = 0; i < count; i++) {
+        shades.push(hslToHex(hsl.h, hsl.s, minL + step * i));
+    }
+    return shades;
+}
+
+/**
+ * Get display color for an epic index (shade if grouped, original otherwise)
+ */
+function getDisplayColor(epicIndex) {
+    for (const group of epicGroups) {
+        const pos = group.members.indexOf(epicIndex);
+        if (pos !== -1) {
+            return group.shades[pos];
+        }
+    }
+    return chartData.colors[epicIndex];
+}
+
+/**
+ * Find which group an epic index belongs to
+ */
+function findGroupForEpic(epicIndex) {
+    return epicGroups.find(g => g.members.includes(epicIndex)) || null;
+}
+
+/**
+ * Build the rendering order for epic rows
+ * Returns array of items: { type: 'epic', index } or { type: 'subtotal', group }
+ */
+function buildRenderOrder() {
+    const rendered = new Set();
+    const order = [];
+
+    for (let i = 0; i < chartData.labels.length; i++) {
+        if (rendered.has(i)) continue;
+
+        const group = findGroupForEpic(i);
+        if (group) {
+            // Render all group members adjacent
+            for (const memberIdx of group.members) {
+                if (!rendered.has(memberIdx)) {
+                    order.push({ type: 'epic', index: memberIdx });
+                    rendered.add(memberIdx);
+                }
+            }
+            // Subtotal row after group members
+            order.push({ type: 'subtotal', group: group });
+        } else {
+            order.push({ type: 'epic', index: i });
+            rendered.add(i);
+        }
+    }
+    return order;
+}
+
+/**
+ * Render the epic table from chartData (JS-rendered)
+ */
+function renderEpicTable() {
+    const tbody = document.getElementById('epic-table-body');
+    if (!tbody || !chartData) return;
+
+    const order = buildRenderOrder();
+    let html = '';
+
+    for (const item of order) {
+        if (item.type === 'epic') {
+            const i = item.index;
+            const color = getDisplayColor(i);
+            const epicKey = chartData.epic_keys[i];
+            const label = chartData.labels[i];
+            const value = chartData.values[i];
+            const pct = chartData.percentages[i];
+            const checked = selectedEpicIndices.has(i) ? 'checked' : '';
+            const inGroup = findGroupForEpic(i) !== null;
+
+            const epicLink = epicKey
+                ? `<a href="${jiraBaseUrl}/browse/${epicKey}" target="_blank">${epicKey}</a>`
+                : '—';
+
+            html += `<tr>
+                <td style="width: 4px; padding: 0; background: ${color};"></td>
+                <td>${epicLink}</td>
+                <td class="clickable-cell truncate" onclick='filterTableByEpic(${JSON.stringify(epicKey)}, ${JSON.stringify(label)})' title="${label}">${label}</td>
+                <td class="text-right">${value}</td>
+                <td class="text-right">${pct}%</td>
+                <td style="padding: 4px 8px; text-align: center;"><input type="checkbox" class="epic-checkbox" data-index="${i}" ${checked} ${inGroup ? 'disabled' : ''}></td>
+            </tr>`;
+        } else {
+            // Subtotal row
+            const group = item.group;
+            const totalHours = group.members.reduce((sum, idx) => sum + parseFloat(chartData.values[idx] || 0), 0);
+            const totalPct = group.members.reduce((sum, idx) => sum + parseFloat(chartData.percentages[idx] || 0), 0);
+            const epicKeys = group.members.map(idx => chartData.epic_keys[idx]).filter(Boolean);
+
+            html += `<tr class="group-subtotal-row">
+                <td style="width: 4px; padding: 0;"></td>
+                <td></td>
+                <td class="clickable-cell" onclick='filterTableByGroup(${JSON.stringify(epicKeys)}, ${JSON.stringify(group.name)})'>${group.name}</td>
+                <td class="text-right">${totalHours.toFixed(1)}</td>
+                <td class="text-right">${totalPct.toFixed(1)}%</td>
+                <td style="padding: 4px 8px; text-align: center;"><button class="btn-ungroup" onclick="ungroupById(${group.id})" title="Ungroup">✕</button></td>
+            </tr>`;
+        }
+    }
+
+    tbody.innerHTML = html;
+
+    // Wire checkbox handlers
+    tbody.querySelectorAll('.epic-checkbox').forEach(cb => {
+        cb.addEventListener('change', function() {
+            const idx = parseInt(this.dataset.index);
+            if (this.checked) {
+                selectedEpicIndices.add(idx);
+            } else {
+                selectedEpicIndices.delete(idx);
+            }
+            updateToolbar();
+        });
+    });
+
+    updateToolbar();
+}
+
+/**
+ * Update the grouping toolbar visibility and content
+ */
+function updateToolbar() {
+    const toolbar = document.getElementById('epic-group-toolbar');
+    if (!toolbar) return;
+
+    let html = '';
+    if (selectedEpicIndices.size >= 2) {
+        html += `<button class="btn-sm" onclick="groupSelectedEpics()">Group Selected (${selectedEpicIndices.size})</button>`;
+    }
+    if (epicGroups.length > 0) {
+        html += `<button class="btn-sm" onclick="ungroupAll()">Ungroup All</button>`;
+    }
+    toolbar.innerHTML = html;
+}
+
+/**
+ * Group the currently selected epics
+ */
+function groupSelectedEpics() {
+    if (selectedEpicIndices.size < 2) return;
+
+    const indices = Array.from(selectedEpicIndices).sort((a, b) => a - b);
+
+    // Remove from any existing groups (dissolve empty groups)
+    for (const idx of indices) {
+        const existingGroup = findGroupForEpic(idx);
+        if (existingGroup) {
+            existingGroup.members = existingGroup.members.filter(m => m !== idx);
+        }
+    }
+    epicGroups = epicGroups.filter(g => g.members.length > 0);
+
+    // Prompt for group name
+    const defaultName = 'Group ' + (++groupIdCounter);
+    const name = prompt('Group name:', defaultName);
+    if (name === null) return; // cancelled
+
+    // Pick base color from first selected epic
+    const baseColor = chartData.colors[indices[0]];
+    const shades = generateColorShades(baseColor, indices.length);
+
+    epicGroups.push({
+        id: groupIdCounter,
+        name: name || defaultName,
+        members: indices,
+        baseColor: baseColor,
+        shades: shades
+    });
+
+    selectedEpicIndices.clear();
+    renderEpicTable();
+    if (typeof updateChartForGroups === 'function') {
+        updateChartForGroups();
+    }
+}
+
+/**
+ * Ungroup a specific group by ID
+ */
+function ungroupById(id) {
+    epicGroups = epicGroups.filter(g => g.id !== id);
+    renderEpicTable();
+    if (typeof updateChartForGroups === 'function') {
+        updateChartForGroups();
+    }
+}
+
+/**
+ * Ungroup all groups
+ */
+function ungroupAll() {
+    epicGroups = [];
+    selectedEpicIndices.clear();
+    renderEpicTable();
+    if (typeof updateChartForGroups === 'function') {
+        updateChartForGroups();
+    }
+}
+
+/**
+ * Filter issue table by multiple epic keys (for group subtotal click)
+ * @param {string[]} epicKeys - Array of epic keys to filter by
+ * @param {string} groupName - Group name for display
+ */
+function filterTableByGroup(epicKeys, groupName) {
+    const keySet = new Set(epicKeys);
+    filteredRows = allIssueRows.filter(row => keySet.has(row.epic_key));
+    currentPage = 1;
+
+    const filterIndicator = document.getElementById('filter-indicator');
+    const filterEpicName = document.getElementById('filter-epic-name');
+    const clearBtn = document.getElementById('clear-filter-btn');
+
+    if (filterIndicator) filterIndicator.classList.add('active');
+    if (filterEpicName) filterEpicName.textContent = groupName;
+    if (clearBtn) clearBtn.style.display = 'inline-block';
+
+    const issueView = document.getElementById('issue-view');
+    const toggleBtn = document.getElementById('toggle-issues-btn');
+    if (issueView) issueView.style.display = 'block';
+    if (toggleBtn) toggleBtn.textContent = 'Hide issue list';
+
+    renderTable();
 }

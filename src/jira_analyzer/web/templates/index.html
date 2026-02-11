@@ -61,6 +61,11 @@
             initEpicChart('epic-chart', chartData);
         }
 
+        // Initialize epic table (JS-rendered with grouping support)
+        if (typeof initEpicTable === 'function') {
+            initEpicTable('{{ result.jira_url | e }}');
+        }
+
         // Initialize table functionality
         if (typeof initTable === 'function') {
             const issueData = {{ result.issue_table_data | tojson | safe }};

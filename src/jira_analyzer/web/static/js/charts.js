@@ -30,6 +30,7 @@ function initEpicChart(canvasId, data) {
         backgroundColor: data.colors[index],
         borderWidth: 0,
         borderSkipped: false,
+        _epicIndex: index,
     }));
 
     epicChart = new Chart(ctx, {
@@ -59,7 +60,7 @@ function initEpicChart(canvasId, data) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            const index = context.datasetIndex;
+                            const index = context.dataset._epicIndex;
                             const label = data.labels[index];
                             const value = data.values[index];
                             const percentage = data.percentages[index];
@@ -73,7 +74,8 @@ function initEpicChart(canvasId, data) {
             },
             onClick: function(event, elements) {
                 if (elements.length > 0) {
-                    const index = elements[0].datasetIndex;
+                    const dataset = epicChart.data.datasets[elements[0].datasetIndex];
+                    const index = dataset._epicIndex;
                     const epicKey = data.epic_keys[index];
                     const epicName = data.labels[index];
                     filterTableByEpic(epicKey, epicName);
@@ -89,4 +91,33 @@ function initEpicChart(canvasId, data) {
  */
 function getChartData() {
     return chartData;
+}
+
+/**
+ * Update chart datasets to reflect current epic grouping order and colors
+ */
+function updateChartForGroups() {
+    if (!epicChart || !chartData) return;
+
+    // Build datasets in the same order as the epic table
+    const order = buildRenderOrder();
+    const datasets = [];
+
+    for (const item of order) {
+        if (item.type === 'epic') {
+            const i = item.index;
+            datasets.push({
+                label: chartData.labels[i],
+                data: [chartData.values[i]],
+                backgroundColor: getDisplayColor(i),
+                borderWidth: 0,
+                borderSkipped: false,
+                _epicIndex: i,
+            });
+        }
+        // subtotal rows don't appear in the chart
+    }
+
+    epicChart.data.datasets = datasets;
+    epicChart.update();
 }
