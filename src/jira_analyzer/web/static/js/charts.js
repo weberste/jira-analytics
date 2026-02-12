@@ -23,6 +23,8 @@ function initEpicChart(canvasId, data) {
 
     const ctx = canvas.getContext('2d');
 
+    const totalValue = data.values.reduce((sum, v) => sum + parseFloat(v || 0), 0);
+
     // Create one dataset per epic for stacked bar
     const datasets = data.labels.map((label, index) => ({
         label: label,
@@ -30,6 +32,8 @@ function initEpicChart(canvasId, data) {
         backgroundColor: data.colors[index],
         borderWidth: 0,
         borderSkipped: false,
+        categoryPercentage: 1.0,
+        barPercentage: 1.0,
         _epicIndex: index,
     }));
 
@@ -43,14 +47,19 @@ function initEpicChart(canvasId, data) {
             indexAxis: 'y',  // Horizontal bar
             responsive: true,
             maintainAspectRatio: false,
+            layout: { padding: 0, autoPadding: false },
             scales: {
                 x: {
                     stacked: true,
-                    display: false,  // Hide x-axis
+                    display: false,
+                    min: 0,
+                    max: totalValue,
+                    afterFit: function(axis) { axis.height = 0; axis.paddingTop = 0; axis.paddingBottom = 0; }
                 },
                 y: {
                     stacked: true,
-                    display: false,  // Hide y-axis
+                    display: false,
+                    afterFit: function(axis) { axis.width = 0; axis.paddingLeft = 0; axis.paddingRight = 0; }
                 }
             },
             plugins: {
@@ -112,6 +121,8 @@ function updateChartForGroups() {
                 backgroundColor: getDisplayColor(i),
                 borderWidth: 0,
                 borderSkipped: false,
+                categoryPercentage: 1.0,
+                barPercentage: 1.0,
                 _epicIndex: i,
             });
         }

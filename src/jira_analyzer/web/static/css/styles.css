@@ -444,9 +444,15 @@ footer code {
 
 /* ===== Stacked Bar Chart ===== */
 .stacked-chart-container {
+    position: relative;
     margin-bottom: 24px;
     height: 40px;
+    width: 100%;
     cursor: pointer;
+}
+
+.stacked-chart-container canvas {
+    width: 100% !important;
 }
 
 /* ===== Tables ===== */
