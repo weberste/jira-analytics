@@ -166,6 +166,17 @@ jira-analyzer utilization --jql "..." --from ... --to ...
 
 No reinstall needed — `pip install -e .` creates a link to your source.
 
+### Web Development with Hot Reload
+
+Start the web server in debug mode for automatic reloading:
+
+```bash
+jira-analyzer web --debug --port 5050
+```
+
+- **Python changes** (`.py` files): Flask auto-reloads the server automatically.
+- **Static file changes** (JS/CSS): The server serves them directly from `src/jira_analyzer/web/static/`, so changes are immediate — just hard-refresh your browser (`Cmd+Shift+R` on Mac, `Ctrl+Shift+R` on Windows/Linux) to bypass the cache.
+
 ### Running Tests
 
 ```bash
