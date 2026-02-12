@@ -37,6 +37,7 @@ class Issue:
     assignee_history: list[AssigneeChange]
     current_developer: str | None
     current_assignee: str | None
+    parent_key: str | None = None  # non-epic parent (for sub-tasks)
 
 
 @dataclass
@@ -91,3 +92,19 @@ class AnalysisResult:
     unassigned_issue_keys: list[str] = field(default_factory=list)
     epic_summaries: list[EpicSummary] | None = None
     from_cache: bool = False
+
+
+def resolve_epic_hierarchy(issues: list[Issue]) -> None:
+    """Resolve epic info for sub-tasks via their parent story/task.
+
+    When a sub-task's parent is a Story (not an Epic), it will have
+    parent_key set but epic_key=None. This function looks up the parent
+    in the issue list and inherits its epic_key/epic_title.
+    """
+    issue_by_key = {issue.key: issue for issue in issues}
+    for issue in issues:
+        if issue.epic_key is None and issue.parent_key:
+            parent = issue_by_key.get(issue.parent_key)
+            if parent and parent.epic_key:
+                issue.epic_key = parent.epic_key
+                issue.epic_title = parent.epic_title

@@ -13,7 +13,7 @@ from jira_analyzer.jira_client import (
     RateLimitError,
     build_date_filtered_jql,
 )
-from jira_analyzer.models import NormalizedTimeEntry
+from jira_analyzer.models import NormalizedTimeEntry, resolve_epic_hierarchy
 from jira_analyzer.normalizer import normalize_time_entries
 from jira_analyzer.time_calculator import calculate_raw_time
 
@@ -213,6 +213,8 @@ def run_analysis(
             save_to_cache(raw_jql, from_date, to_date, raw_issues)
 
         issues = [client._parse_issue(issue_dict) for issue_dict in raw_issues]
+
+    resolve_epic_hierarchy(issues)
 
     if not issues:
         raise NoIssuesFoundError("No issues found matching your query.")

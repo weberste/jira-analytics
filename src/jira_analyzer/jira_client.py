@@ -170,14 +170,19 @@ class JiraClient:
         fields = issue_dict.get("fields", {})
         changelog = issue_dict.get("changelog", {})
 
-        # Extract parent epic
+        # Extract parent epic (only if parent is actually an Epic)
         parent = fields.get("parent")
         epic_key = None
         epic_title = None
+        parent_key = None
         if parent:
-            epic_key = parent.get("key")
-            parent_fields = parent.get("fields", {})
-            epic_title = parent_fields.get("summary")
+            parent_type = parent.get("fields", {}).get("issuetype", {}).get("name", "")
+            if parent_type == "Epic":
+                epic_key = parent.get("key")
+                epic_title = parent.get("fields", {}).get("summary")
+            else:
+                # Sub-task whose parent is a Story/Task — resolve epic later
+                parent_key = parent.get("key")
 
         # Extract current assignee
         assignee = fields.get("assignee")
@@ -206,6 +211,7 @@ class JiraClient:
             assignee_history=assignee_history,
             current_developer=current_developer,
             current_assignee=current_assignee,
+            parent_key=parent_key,
         )
 
     def _parse_status_history(self, changelog: dict) -> list[StatusTransition]:

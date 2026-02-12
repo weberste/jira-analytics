@@ -1,8 +1,9 @@
 """Tests for jira_client module."""
 
 from datetime import date
+from unittest.mock import MagicMock
 
-from jira_analyzer.jira_client import build_date_filtered_jql
+from jira_analyzer.jira_client import JiraClient, build_date_filtered_jql
 
 
 class TestBuildDateFilteredJql:
@@ -53,3 +54,78 @@ class TestBuildDateFilteredJql:
         result = build_date_filtered_jql(jql, start, end, track_epic_time=True)
 
         assert "type != Epic" not in result
+
+
+class TestParseIssue:
+    """Tests for JiraClient._parse_issue."""
+
+    def _make_client(self):
+        config = MagicMock()
+        config.developer_field = None
+        client = JiraClient.__new__(JiraClient)
+        client.config = config
+        return client
+
+    def test_parent_epic_sets_epic_key(self):
+        """When parent is an Epic, epic_key and epic_title are set."""
+        client = self._make_client()
+        issue_dict = {
+            "key": "TEST-1",
+            "fields": {
+                "summary": "My Story",
+                "issuetype": {"name": "Story"},
+                "assignee": None,
+                "parent": {
+                    "key": "EPIC-1",
+                    "fields": {
+                        "summary": "My Epic",
+                        "issuetype": {"name": "Epic"},
+                    },
+                },
+            },
+            "changelog": {"histories": []},
+        }
+        issue = client._parse_issue(issue_dict)
+        assert issue.epic_key == "EPIC-1"
+        assert issue.epic_title == "My Epic"
+        assert issue.parent_key is None
+
+    def test_parent_story_sets_parent_key_not_epic(self):
+        """When parent is a Story (not Epic), parent_key is set but epic_key is None."""
+        client = self._make_client()
+        issue_dict = {
+            "key": "TEST-2",
+            "fields": {
+                "summary": "My Sub-task",
+                "issuetype": {"name": "Sub-task"},
+                "assignee": None,
+                "parent": {
+                    "key": "STORY-1",
+                    "fields": {
+                        "summary": "Parent Story",
+                        "issuetype": {"name": "Story"},
+                    },
+                },
+            },
+            "changelog": {"histories": []},
+        }
+        issue = client._parse_issue(issue_dict)
+        assert issue.epic_key is None
+        assert issue.epic_title is None
+        assert issue.parent_key == "STORY-1"
+
+    def test_no_parent(self):
+        """Issue without parent has no epic and no parent_key."""
+        client = self._make_client()
+        issue_dict = {
+            "key": "TEST-3",
+            "fields": {
+                "summary": "Standalone",
+                "issuetype": {"name": "Task"},
+                "assignee": None,
+            },
+            "changelog": {"histories": []},
+        }
+        issue = client._parse_issue(issue_dict)
+        assert issue.epic_key is None
+        assert issue.parent_key is None

@@ -26,7 +26,7 @@ from jira_analyzer.jira_client import (
     RateLimitError,
     build_date_filtered_jql,
 )
-from jira_analyzer.models import AnalysisResult
+from jira_analyzer.models import AnalysisResult, resolve_epic_hierarchy
 from jira_analyzer.normalizer import normalize_time_entries
 from jira_analyzer.output import (
     console,
@@ -153,6 +153,8 @@ def utilization(
             save_to_cache(raw_jql, start_date, end_date, raw_issues)
 
         issues = [client._parse_issue(issue_dict) for issue_dict in raw_issues]
+
+    resolve_epic_hierarchy(issues)
 
     if not issues:
         print_no_data_message(jql, start_date, end_date)
