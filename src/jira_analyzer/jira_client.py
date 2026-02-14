@@ -84,7 +84,7 @@ class JiraClient:
                 self._client = JIRA(
                     server=self.config.jira_url,
                     basic_auth=(self.config.jira_email, self.config.jira_api_token),
-                    timeout=30,
+                    timeout=15,
                 )
             except JIRAError as e:
                 if e.status_code == 401:
