@@ -37,42 +37,6 @@
     --chart-6: #4d2d00;
 }
 
-/* Dashboard Theme - Bold, colorful, card-focused */
-[data-theme="dashboard"] {
-    --bg-primary: #f0f4f8;
-    --bg-secondary: #ffffff;
-    --bg-tertiary: #e8eef4;
-    --text-primary: #1a202c;
-    --text-secondary: #4a5568;
-    --text-muted: #718096;
-    --accent-primary: #3182ce;
-    --accent-secondary: #2b6cb0;
-    --accent-light: rgba(49, 130, 206, 0.12);
-    --border-color: #cbd5e0;
-    --border-light: #e2e8f0;
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
-    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.15);
-
-    --success: #38a169;
-    --warning: #d69e2e;
-    --error: #e53e3e;
-    --info: #3182ce;
-
-    --chart-1: #3182ce;
-    --chart-2: #805ad5;
-    --chart-3: #d53f8c;
-    --chart-4: #e53e3e;
-    --chart-5: #dd6b20;
-    --chart-6: #38a169;
-
-    /* Dashboard-specific */
-    --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --gradient-4: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-}
-
 /* ===== Base Reset & Typography ===== */
 * {
     box-sizing: border-box;
@@ -122,31 +86,6 @@ header h1::before {
     height: 28px;
     background: linear-gradient(135deg, var(--chart-1) 0%, var(--chart-2) 100%);
     border-radius: var(--radius-sm);
-}
-
-/* Theme Toggle */
-.theme-toggle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--text-secondary);
-    transition: all var(--transition);
-}
-
-.theme-toggle:hover {
-    background: var(--accent-light);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-}
-
-.theme-toggle-icon {
-    font-size: 16px;
 }
 
 /* ===== Footer ===== */
@@ -803,104 +742,6 @@ footer code {
         flex-direction: column;
         align-items: stretch;
     }
-}
-
-/* ===== Dashboard Theme Enhancements ===== */
-[data-theme="dashboard"] .summary-item {
-    background: var(--bg-secondary);
-    border: none;
-    box-shadow: var(--shadow-md);
-    position: relative;
-    overflow: hidden;
-}
-
-[data-theme="dashboard"] .summary-item::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: var(--gradient-1);
-}
-
-[data-theme="dashboard"] .summary-item:nth-child(2)::before {
-    background: var(--gradient-2);
-}
-
-[data-theme="dashboard"] .summary-item:nth-child(3)::before {
-    background: var(--gradient-3);
-}
-
-[data-theme="dashboard"] .summary-item:nth-child(4)::before {
-    background: var(--gradient-4);
-}
-
-[data-theme="dashboard"] .summary-item .value {
-    font-size: 2rem;
-    background: var(--gradient-1);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-[data-theme="dashboard"] .summary-item:nth-child(2) .value {
-    background: var(--gradient-2);
-    -webkit-background-clip: text;
-    background-clip: text;
-}
-
-[data-theme="dashboard"] .summary-item:nth-child(3) .value {
-    background: var(--gradient-3);
-    -webkit-background-clip: text;
-    background-clip: text;
-}
-
-[data-theme="dashboard"] .summary-item:nth-child(4) .value {
-    background: var(--gradient-4);
-    -webkit-background-clip: text;
-    background-clip: text;
-}
-
-[data-theme="dashboard"] .summary-item.clickable:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-}
-
-[data-theme="dashboard"] .results-section {
-    box-shadow: var(--shadow-md);
-}
-
-[data-theme="dashboard"] .form-section {
-    box-shadow: var(--shadow-md);
-}
-
-[data-theme="dashboard"] .chart-container {
-    background: var(--bg-secondary);
-    box-shadow: var(--shadow-sm);
-}
-
-[data-theme="dashboard"] .btn-primary {
-    background: var(--gradient-1);
-    border: none;
-    box-shadow: 0 4px 14px rgba(102, 126, 234, 0.4);
-}
-
-[data-theme="dashboard"] .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-}
-
-[data-theme="dashboard"] header h1::before {
-    background: var(--gradient-1);
-}
-
-[data-theme="dashboard"] .data-table th {
-    background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-}
-
-[data-theme="dashboard"] .data-table tbody tr:hover {
-    background: linear-gradient(90deg, var(--accent-light) 0%, transparent 100%);
 }
 
 /* ===== Epic Grouping ===== */

@@ -12,10 +12,6 @@
     <div class="container">
         <header>
             <h1>JIRA Allocation Analyzer</h1>
-            <button class="theme-toggle" onclick="toggleTheme()" title="Switch theme">
-                <span class="theme-toggle-icon">◐</span>
-                <span class="theme-toggle-label">Theme</span>
-            </button>
         </header>
         <main>
             {% block content %}{% endblock %}
@@ -24,44 +20,6 @@
             <p>Use <code>jira-analyzer config show</code> to view configuration</p>
         </footer>
     </div>
-    <script>
-        // Theme management
-        function getPreferredTheme() {
-            const stored = localStorage.getItem('theme');
-            if (stored) return stored;
-            return 'clean'; // default
-        }
-
-        function setTheme(theme) {
-            if (theme === 'dashboard') {
-                document.documentElement.setAttribute('data-theme', 'dashboard');
-            } else {
-                document.documentElement.removeAttribute('data-theme');
-            }
-            localStorage.setItem('theme', theme);
-            updateToggleLabel(theme);
-        }
-
-        function toggleTheme() {
-            const current = getPreferredTheme();
-            const next = current === 'clean' ? 'dashboard' : 'clean';
-            setTheme(next);
-        }
-
-        function updateToggleLabel(theme) {
-            const label = document.querySelector('.theme-toggle-label');
-            const icon = document.querySelector('.theme-toggle-icon');
-            if (label) {
-                label.textContent = theme === 'dashboard' ? 'Dashboard' : 'Minimal';
-            }
-            if (icon) {
-                icon.textContent = theme === 'dashboard' ? '▦' : '○';
-            }
-        }
-
-        // Apply theme on load
-        setTheme(getPreferredTheme());
-    </script>
     <script src="{{ url_for('main.static', filename='js/charts.js') }}"></script>
     <script src="{{ url_for('main.static', filename='js/app.js') }}"></script>
     {% block scripts %}{% endblock %}
