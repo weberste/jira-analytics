@@ -1,10 +1,24 @@
 <div class="form-section">
     <form method="POST" action="{{ url_for('main.analyze') }}" id="analysis-form">
         <div class="form-group">
-            <label for="jql">JQL Query</label>
-            <input type="text" id="jql" name="jql"
-                   placeholder='e.g., project = MYPROJ AND sprint = "Sprint 23"'
-                   value="{{ jql or '' }}" required>
+            <label>Query</label>
+            <div class="query-mode-toggle">
+                <button type="button" class="toggle-btn active" data-mode="project" id="mode-project-btn">Project</button>
+                <button type="button" class="toggle-btn" data-mode="jql" id="mode-jql-btn">Custom JQL</button>
+            </div>
+            <div id="project-mode">
+                <div class="searchable-select" id="project-select">
+                    <input type="text" id="project-search" placeholder="Search projects..." autocomplete="off">
+                    <div class="searchable-select-dropdown" id="project-dropdown"></div>
+                </div>
+                <input type="hidden" id="project-input" value="">
+            </div>
+            <div id="jql-mode" style="display: none;">
+                <input type="text" id="jql-input"
+                       placeholder='e.g., project = MYPROJ AND sprint = "Sprint 23"'
+                       value="{{ jql or '' }}">
+            </div>
+            <input type="hidden" id="jql" name="jql" value="{{ jql or '' }}">
         </div>
         <div class="form-row form-row-controls">
             <div class="form-group">

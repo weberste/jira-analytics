@@ -32,9 +32,30 @@
 <script>
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
+        // Load projects for the project picker
+        {% if demo_projects %}
+        if (typeof populateProjectList === 'function') {
+            populateProjectList({{ demo_projects | tojson | safe }});
+        }
+        {% else %}
+        if (typeof loadProjects === 'function') {
+            loadProjects();
+        }
+        {% endif %}
+
         // Restore form state
         if (typeof restoreFormState === 'function') {
             restoreFormState();
+        }
+
+        // Mode toggle handlers
+        var modeProjectBtn = document.getElementById('mode-project-btn');
+        var modeJqlBtn = document.getElementById('mode-jql-btn');
+        if (modeProjectBtn) {
+            modeProjectBtn.addEventListener('click', function() { setQueryMode('project'); });
+        }
+        if (modeJqlBtn) {
+            modeJqlBtn.addEventListener('click', function() { setQueryMode('jql'); });
         }
 
         // Form submission handler
@@ -42,7 +63,14 @@
         const submitBtn = document.getElementById('submit-btn');
 
         if (form) {
-            form.addEventListener('submit', function() {
+            form.addEventListener('submit', function(e) {
+                // Build JQL from active mode
+                if (typeof buildJqlFromMode === 'function') {
+                    if (!buildJqlFromMode()) {
+                        e.preventDefault();
+                        return;
+                    }
+                }
                 // Save form state
                 if (typeof saveFormState === 'function') {
                     saveFormState();

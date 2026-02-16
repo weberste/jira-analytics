@@ -103,6 +103,28 @@ class JiraClient:
                 raise
         return self._client
 
+    def list_projects(self) -> list[dict[str, str]]:
+        """Fetch all accessible JIRA projects.
+
+        Returns:
+            List of dicts with 'key' and 'name', sorted by name.
+
+        Raises:
+            AuthenticationError: If authentication fails
+        """
+        client = self._get_client()
+        try:
+            projects = client.projects()
+        except JIRAError as e:
+            if e.status_code == 401:
+                raise AuthenticationError(
+                    "Authentication failed. Check your email and API token."
+                ) from e
+            raise
+        result = [{"key": p.key, "name": p.name} for p in projects]
+        result.sort(key=lambda p: p["name"].lower())
+        return result
+
     @retry(
         retry=retry_if_exception_type(RateLimitError),
         stop=stop_after_attempt(3),

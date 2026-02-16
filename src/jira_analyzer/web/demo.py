@@ -10,6 +10,17 @@ from jira_analyzer.web.analysis import (
 )
 
 
+def generate_demo_projects() -> list[dict[str, str]]:
+    """Generate sample project list for demo mode."""
+    return [
+        {"key": "DEMO", "name": "Demo Project"},
+        {"key": "DESIGN", "name": "Design System"},
+        {"key": "INFRA", "name": "Infrastructure"},
+        {"key": "MOBILE", "name": "Mobile App"},
+        {"key": "PLATFORM", "name": "Platform Core"},
+    ]
+
+
 def generate_demo_result() -> WebAnalysisResult:
     """Generate sample analysis result for demo mode."""
     today = date.today()

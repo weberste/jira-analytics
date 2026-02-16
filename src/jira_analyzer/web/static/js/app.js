@@ -334,13 +334,19 @@ function truncate(str, maxLength) {
  * Save form state to sessionStorage
  */
 function saveFormState() {
-    const jql = document.getElementById('jql');
     const fromDate = document.getElementById('from_date');
     const toDate = document.getElementById('to_date');
+    const projectInput = document.getElementById('project-input');
+    const jqlInput = document.getElementById('jql-input');
 
-    if (jql && fromDate && toDate) {
+    const activeMode = document.querySelector('.toggle-btn.active');
+    const queryMode = activeMode ? activeMode.dataset.mode : 'project';
+
+    if (fromDate && toDate) {
         sessionStorage.setItem('jira_analyzer_form', JSON.stringify({
-            jql: jql.value,
+            query_mode: queryMode,
+            selected_project: projectInput ? projectInput.value : '',
+            jql: jqlInput ? jqlInput.value : '',
             from_date: fromDate.value,
             to_date: toDate.value
         }));
@@ -356,14 +362,38 @@ function restoreFormState() {
 
     try {
         const state = JSON.parse(saved);
-        const jql = document.getElementById('jql');
+        const hiddenJql = document.getElementById('jql');
+        const jqlInput = document.getElementById('jql-input');
+        const projectInput = document.getElementById('project-input');
         const fromDate = document.getElementById('from_date');
         const toDate = document.getElementById('to_date');
 
-        // Only restore if fields are empty (don't override server values)
-        if (jql && !jql.value && state.jql) {
-            jql.value = state.jql;
+        // Check if server rendered a JQL value (after POST)
+        const serverJql = hiddenJql ? hiddenJql.value : '';
+
+        if (serverJql) {
+            // Server provided JQL — detect mode from pattern
+            const projectMatch = serverJql.match(/^project\s*=\s*(\S+)$/i);
+            if (projectMatch) {
+                setQueryMode('project');
+                selectProject(projectMatch[1]);
+            } else {
+                setQueryMode('jql');
+                if (jqlInput) jqlInput.value = serverJql;
+            }
+        } else {
+            // No server value — restore from sessionStorage
+            if (state.query_mode) {
+                setQueryMode(state.query_mode);
+            }
+            if (state.selected_project) {
+                selectProject(state.selected_project);
+            }
+            if (jqlInput && !jqlInput.value && state.jql) {
+                jqlInput.value = state.jql;
+            }
         }
+
         if (fromDate && !fromDate.value && state.from_date) {
             fromDate.value = state.from_date;
         }
@@ -373,6 +403,189 @@ function restoreFormState() {
     } catch (e) {
         console.error('Error restoring form state:', e);
     }
+}
+
+/**
+ * Set the query mode (project or jql)
+ * @param {string} mode - 'project' or 'jql'
+ */
+function setQueryMode(mode) {
+    const projectMode = document.getElementById('project-mode');
+    const jqlMode = document.getElementById('jql-mode');
+    const projectBtn = document.getElementById('mode-project-btn');
+    const jqlBtn = document.getElementById('mode-jql-btn');
+
+    if (mode === 'jql') {
+        // Pre-fill JQL input from selected project
+        var projectHidden = document.getElementById('project-input');
+        var jqlInput = document.getElementById('jql-input');
+        if (projectHidden && projectHidden.value && jqlInput) {
+            jqlInput.value = 'project = ' + projectHidden.value;
+        }
+        if (projectMode) projectMode.style.display = 'none';
+        if (jqlMode) jqlMode.style.display = 'block';
+        if (projectBtn) projectBtn.classList.remove('active');
+        if (jqlBtn) jqlBtn.classList.add('active');
+    } else {
+        if (projectMode) projectMode.style.display = 'block';
+        if (jqlMode) jqlMode.style.display = 'none';
+        if (projectBtn) projectBtn.classList.add('active');
+        if (jqlBtn) jqlBtn.classList.remove('active');
+    }
+}
+
+/**
+ * Load projects from /api/projects and populate the datalist
+ */
+function loadProjects() {
+    const cached = sessionStorage.getItem('jira_projects');
+    if (cached) {
+        try {
+            populateProjectList(JSON.parse(cached));
+            return;
+        } catch (e) {
+            // ignore bad cache
+        }
+    }
+
+    fetch('/api/projects')
+        .then(function(resp) {
+            if (!resp.ok) return [];
+            return resp.json();
+        })
+        .then(function(projects) {
+            if (Array.isArray(projects) && projects.length > 0) {
+                sessionStorage.setItem('jira_projects', JSON.stringify(projects));
+                populateProjectList(projects);
+            }
+        })
+        .catch(function() {
+            // silently fail — user can still use custom JQL
+        });
+}
+
+// Project list cache for the searchable dropdown
+let _projectList = [];
+
+/**
+ * Populate the searchable project dropdown with options
+ * @param {Array} projects - Array of {key, name}
+ */
+function populateProjectList(projects) {
+    _projectList = projects;
+    var search = document.getElementById('project-search');
+    if (!search) return;
+
+    // Render full list initially
+    renderProjectDropdown('');
+
+    // Filter on input
+    search.addEventListener('input', function() {
+        renderProjectDropdown(this.value);
+    });
+
+    // Show dropdown on focus — show all projects, highlight selected, select text
+    search.addEventListener('focus', function() {
+        var dropdown = document.getElementById('project-dropdown');
+        if (dropdown) dropdown.classList.add('open');
+        renderProjectDropdown('');
+        this.select();
+    });
+
+    // Hide dropdown on outside click
+    document.addEventListener('click', function(e) {
+        var container = document.getElementById('project-select');
+        var dropdown = document.getElementById('project-dropdown');
+        if (container && dropdown && !container.contains(e.target)) {
+            dropdown.classList.remove('open');
+        }
+    });
+}
+
+/**
+ * Render the filtered project dropdown
+ * @param {string} query - Search text
+ */
+function renderProjectDropdown(query) {
+    var dropdown = document.getElementById('project-dropdown');
+    if (!dropdown) return;
+
+    var q = query.toLowerCase().trim();
+    var filtered = _projectList.filter(function(p) {
+        return !q || p.name.toLowerCase().indexOf(q) !== -1 || p.key.toLowerCase().indexOf(q) !== -1;
+    });
+
+    var selectedKey = '';
+    var projectHidden = document.getElementById('project-input');
+    if (projectHidden) selectedKey = projectHidden.value;
+
+    if (filtered.length === 0) {
+        dropdown.innerHTML = '<div class="searchable-select-empty">No projects found</div>';
+    } else {
+        dropdown.innerHTML = filtered.map(function(p) {
+            var cls = 'searchable-select-option' + (p.key === selectedKey ? ' highlighted' : '');
+            return '<div class="' + cls + '" data-key="' + p.key + '">'
+                + p.name + '<span class="project-key">' + p.key + '</span></div>';
+        }).join('');
+
+        // Click handlers
+        dropdown.querySelectorAll('.searchable-select-option').forEach(function(opt) {
+            opt.addEventListener('click', function() {
+                selectProject(this.dataset.key);
+            });
+        });
+
+        // Scroll highlighted option into view
+        var active = dropdown.querySelector('.highlighted');
+        if (active) active.scrollIntoView({ block: 'nearest' });
+    }
+}
+
+/**
+ * Select a project from the dropdown
+ * @param {string} key - Project key
+ */
+function selectProject(key) {
+    var search = document.getElementById('project-search');
+    var hidden = document.getElementById('project-input');
+    var dropdown = document.getElementById('project-dropdown');
+
+    var project = _projectList.find(function(p) { return p.key === key; });
+    if (search && project) {
+        search.value = project.name + ' (' + project.key + ')';
+    }
+    if (hidden) hidden.value = key;
+    if (dropdown) dropdown.classList.remove('open');
+}
+
+/**
+ * Build JQL from the active query mode and set it on the hidden field
+ * @returns {boolean} true if JQL was set, false if validation failed
+ */
+function buildJqlFromMode() {
+    const hiddenJql = document.getElementById('jql');
+    const activeMode = document.querySelector('.toggle-btn.active');
+    const mode = activeMode ? activeMode.dataset.mode : 'project';
+
+    if (mode === 'project') {
+        const projectHidden = document.getElementById('project-input');
+        const projectSearch = document.getElementById('project-search');
+        const key = projectHidden ? projectHidden.value.trim() : '';
+        if (!key) {
+            projectSearch && projectSearch.focus();
+            return false;
+        }
+        hiddenJql.value = 'project = ' + key;
+    } else {
+        const jqlInput = document.getElementById('jql-input');
+        const jql = jqlInput ? jqlInput.value.trim() : '';
+        if (!jql) {
+            jqlInput && jqlInput.focus();
+            return false;
+        }
+        hiddenJql.value = jql;
+    }
+    return true;
 }
 
 // ===== Epic Grouping =====

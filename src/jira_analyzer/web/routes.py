@@ -8,7 +8,8 @@ import io
 from flask import Blueprint, Response, jsonify, render_template, request
 
 from jira_analyzer import __version__
-from jira_analyzer.config import config_exists
+from jira_analyzer.config import config_exists, load_config
+from jira_analyzer.jira_client import AuthenticationError, ConnectionError, JiraClient
 from jira_analyzer.web.analysis import (
     AnalysisError,
     ConfigNotFoundError,
@@ -21,7 +22,7 @@ from jira_analyzer.web.analysis import (
     NoIssuesFoundError,
     run_analysis,
 )
-from jira_analyzer.web.demo import generate_demo_result
+from jira_analyzer.web.demo import generate_demo_projects, generate_demo_result
 
 
 bp = Blueprint("main", __name__, static_folder="static", template_folder="templates")
@@ -45,6 +46,28 @@ def health():
         }), 503
 
 
+@bp.route("/api/projects")
+def api_projects():
+    """Return list of all JIRA projects as JSON."""
+    if not config_exists():
+        return jsonify({"error": "Configuration not found"}), 503
+
+    try:
+        config = load_config()
+    except (FileNotFoundError, ValueError) as e:
+        return jsonify({"error": str(e)}), 503
+
+    try:
+        client = JiraClient(config)
+        projects = client.list_projects()
+    except AuthenticationError as e:
+        return jsonify({"error": str(e)}), 401
+    except ConnectionError as e:
+        return jsonify({"error": str(e)}), 503
+
+    return jsonify(projects)
+
+
 @bp.route("/")
 def index():
     """Render the main analysis page."""
@@ -64,6 +87,7 @@ def demo():
         from_date=result.start_date.isoformat(),
         to_date=result.end_date.isoformat(),
         is_demo=True,
+        demo_projects=generate_demo_projects(),
     )
 
 
