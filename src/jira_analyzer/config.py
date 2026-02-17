@@ -44,9 +44,6 @@ class Config:
     workday_start: time = field(default_factory=lambda: DEFAULT_WORKDAY_START)
     workday_end: time = field(default_factory=lambda: DEFAULT_WORKDAY_END)
     max_normalized_hours: float = DEFAULT_MAX_NORMALIZED_HOURS
-    roadmap_start_date_field: str | None = None
-    roadmap_end_date_field: str | None = None
-
     def validate(self) -> list[str]:
         """Validate configuration values. Returns list of error messages."""
         errors: list[str] = []
@@ -122,8 +119,6 @@ def load_config() -> Config:
     # Extract values from TOML structure
     jira_section = data.get("jira", {})
     analysis_section = data.get("analysis", {})
-    roadmap_section = data.get("roadmap", {})
-
     # Parse workday times
     workday_start_str = analysis_section.get("workday_start", "08:00")
     workday_end_str = analysis_section.get("workday_end", "16:00")
@@ -149,8 +144,6 @@ def load_config() -> Config:
         max_normalized_hours=analysis_section.get(
             "max_normalized_hours", DEFAULT_MAX_NORMALIZED_HOURS
         ),
-        roadmap_start_date_field=roadmap_section.get("start_date_field"),
-        roadmap_end_date_field=roadmap_section.get("end_date_field"),
     )
 
     # Validate
@@ -184,14 +177,6 @@ def save_config(config: Config) -> None:
 
     if config.developer_field:
         data["analysis"]["developer_field"] = config.developer_field
-
-    if config.roadmap_start_date_field or config.roadmap_end_date_field:
-        roadmap_data: dict[str, str] = {}
-        if config.roadmap_start_date_field:
-            roadmap_data["start_date_field"] = config.roadmap_start_date_field
-        if config.roadmap_end_date_field:
-            roadmap_data["end_date_field"] = config.roadmap_end_date_field
-        data["roadmap"] = roadmap_data
 
     with open(config_path, "wb") as f:
         tomli_w.dump(data, f)

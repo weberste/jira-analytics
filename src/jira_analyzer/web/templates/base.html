@@ -12,10 +12,6 @@
     <div class="container">
         <header>
             <h1>JIRA Allocation Analyzer</h1>
-            <nav>
-                <a href="/" class="{{ 'active' if active_page == 'utilization' else '' }}">Utilization</a>
-                <a href="/roadmap" class="{{ 'active' if active_page == 'roadmap' else '' }}">Roadmap</a>
-            </nav>
         </header>
         <main>
             {% block content %}{% endblock %}

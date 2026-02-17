@@ -22,11 +22,6 @@ from jira_analyzer.web.analysis import (
     run_analysis,
 )
 from jira_analyzer.web.demo import generate_demo_projects, generate_demo_result
-from jira_analyzer.web.roadmap import (
-    RoadmapConfigError,
-    fetch_roadmap,
-    roadmap_result_to_dict,
-)
 
 bp = Blueprint("main", __name__, static_folder="static", template_folder="templates")
 
@@ -75,7 +70,7 @@ def api_projects():
 def index():
     """Render the main analysis page."""
     has_config = config_exists()
-    return render_template("index.html", has_config=has_config, active_page="utilization")
+    return render_template("index.html", has_config=has_config)
 
 
 @bp.route("/demo")
@@ -91,7 +86,7 @@ def demo():
         to_date=result.end_date.isoformat(),
         is_demo=True,
         demo_projects=generate_demo_projects(),
-        active_page="utilization",
+
     )
 
 
@@ -116,7 +111,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 400
 
     if not from_date_str or not to_date_str:
@@ -129,7 +123,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 400
 
     # Parse dates
@@ -145,7 +138,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 400
 
     try:
@@ -160,7 +152,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 400
 
     if from_date > to_date:
@@ -173,7 +164,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 400
 
     # Run analysis
@@ -191,7 +181,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 503
     except InvalidConfigError as e:
         return render_template(
@@ -203,7 +192,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 503
     except JiraAuthError as e:
         return render_template(
@@ -215,7 +203,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 401
     except JiraRateLimitError as e:
         return render_template(
@@ -227,7 +214,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 429
     except JiraConnectionError as e:
         return render_template(
@@ -239,7 +225,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 503
     except InvalidJqlError as e:
         return render_template(
@@ -251,7 +236,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 400
     except (NoIssuesFoundError, NoActivityFoundError) as e:
         return render_template(
@@ -263,7 +247,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 200
     except AnalysisError as e:
         return render_template(
@@ -275,7 +258,6 @@ def analyze():
             to_date=to_date_str,
             no_cache=no_cache,
             track_epic_time=track_epic_time,
-            active_page="utilization",
         ), 500
 
     # Render with results
@@ -358,127 +340,3 @@ def export():
     )
 
 
-@bp.route("/api/link-types")
-def api_link_types():
-    """Return available JIRA issue link types as JSON."""
-    if not config_exists():
-        return jsonify({"error": "Configuration not found"}), 503
-
-    try:
-        config = load_config()
-    except (FileNotFoundError, ValueError) as e:
-        return jsonify({"error": str(e)}), 503
-
-    try:
-        client = JiraClient(config)
-        link_types = client.list_link_types()
-    except AuthenticationError as e:
-        return jsonify({"error": str(e)}), 401
-    except ConnectionError as e:
-        return jsonify({"error": str(e)}), 503
-
-    return jsonify(link_types)
-
-
-@bp.route("/roadmap")
-def roadmap():
-    """Render the roadmap page (form only)."""
-    has_config = config_exists()
-    return render_template("roadmap.html", has_config=has_config, active_page="roadmap")
-
-
-@bp.route("/roadmap", methods=["POST"])
-def roadmap_post():
-    """Fetch roadmap data and render with results."""
-    jql = request.form.get("jql", "").strip()
-    link_types_str = request.form.get("link_types", "").strip()
-
-    if not jql:
-        return render_template(
-            "roadmap.html",
-            has_config=config_exists(),
-            error="JQL query is required.",
-            jql=jql,
-            active_page="roadmap",
-        ), 400
-
-    # Parse link types
-    link_types = None
-    if link_types_str:
-        link_types = [lt.strip() for lt in link_types_str.split(",") if lt.strip()]
-
-    try:
-        result = fetch_roadmap(jql, link_types=link_types)
-    except ConfigNotFoundError as e:
-        return render_template(
-            "roadmap.html",
-            has_config=False,
-            error=str(e),
-            jql=jql,
-            active_page="roadmap",
-        ), 503
-    except (InvalidConfigError, RoadmapConfigError) as e:
-        return render_template(
-            "roadmap.html",
-            has_config=config_exists(),
-            error=str(e),
-            jql=jql,
-            active_page="roadmap",
-        ), 503
-    except JiraAuthError as e:
-        return render_template(
-            "roadmap.html",
-            has_config=config_exists(),
-            error=str(e),
-            jql=jql,
-            active_page="roadmap",
-        ), 401
-    except JiraRateLimitError as e:
-        return render_template(
-            "roadmap.html",
-            has_config=config_exists(),
-            error=str(e),
-            jql=jql,
-            active_page="roadmap",
-        ), 429
-    except JiraConnectionError as e:
-        return render_template(
-            "roadmap.html",
-            has_config=config_exists(),
-            error=str(e),
-            jql=jql,
-            active_page="roadmap",
-        ), 503
-    except InvalidJqlError as e:
-        return render_template(
-            "roadmap.html",
-            has_config=config_exists(),
-            error=str(e),
-            jql=jql,
-            active_page="roadmap",
-        ), 400
-    except NoIssuesFoundError as e:
-        return render_template(
-            "roadmap.html",
-            has_config=config_exists(),
-            warning=str(e),
-            jql=jql,
-            active_page="roadmap",
-        ), 200
-    except AnalysisError as e:
-        return render_template(
-            "roadmap.html",
-            has_config=config_exists(),
-            error=str(e),
-            jql=jql,
-            active_page="roadmap",
-        ), 500
-
-    return render_template(
-        "roadmap.html",
-        has_config=True,
-        result=result,
-        result_json=roadmap_result_to_dict(result),
-        jql=jql,
-        active_page="roadmap",
-    )
