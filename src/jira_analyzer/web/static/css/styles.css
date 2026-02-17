@@ -894,3 +894,204 @@ footer code {
 .btn-ungroup:hover {
     color: var(--error);
 }
+
+/* ===== Navigation ===== */
+header nav {
+    display: flex;
+    gap: 4px;
+}
+
+header nav a {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition);
+}
+
+header nav a:hover {
+    background: var(--accent-light);
+    color: var(--accent-primary);
+}
+
+header nav a.active {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* ===== Roadmap Timeline ===== */
+.roadmap-timeline {
+    position: relative;
+    overflow-x: auto;
+}
+
+.rm-header {
+    display: flex;
+    border-bottom: 2px solid var(--border-color);
+    background: var(--bg-tertiary);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.rm-header-label {
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    padding: 10px 16px;
+}
+
+.rm-label-col {
+    width: 300px;
+    min-width: 300px;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rm-timeline-col {
+    flex: 1;
+    position: relative;
+    min-width: 600px;
+    min-height: 32px;
+}
+
+.rm-months {
+    position: relative;
+    height: 100%;
+}
+
+.rm-month {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    border-left: 1px solid var(--border-light);
+    box-sizing: border-box;
+}
+
+.rm-body {
+    position: relative;
+}
+
+.rm-gridlines {
+    position: absolute;
+    top: 0;
+    left: 300px;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.rm-gridline {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--border-light);
+}
+
+.rm-today-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--error);
+    opacity: 0.5;
+    z-index: 1;
+}
+
+.rm-row {
+    display: flex;
+    border-bottom: 1px solid var(--border-light);
+    transition: background var(--transition);
+}
+
+.rm-row:hover {
+    background: var(--accent-light);
+}
+
+.rm-init-row {
+    cursor: pointer;
+}
+
+.rm-init-row .rm-label-col {
+    padding: 10px 16px;
+    font-weight: 500;
+}
+
+.rm-epic-row .rm-label-col {
+    padding: 8px 16px 8px 36px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.rm-expand-icon {
+    font-size: 10px;
+    color: var(--text-muted);
+    display: inline-block;
+    width: 14px;
+}
+
+.rm-key {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.rm-key:hover {
+    text-decoration: underline;
+}
+
+.rm-title {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.rm-bar {
+    position: absolute;
+    top: 6px;
+    height: 20px;
+    border-radius: 4px;
+    opacity: 0.85;
+    transition: opacity var(--transition);
+    z-index: 2;
+    cursor: default;
+}
+
+.rm-bar:hover {
+    opacity: 1;
+}
+
+.rm-no-dates {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.link-types-hint {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.hint-label {
+    font-weight: 500;
+}

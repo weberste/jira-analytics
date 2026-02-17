@@ -3,6 +3,15 @@
 from datetime import date, datetime
 
 from jira import JIRA, JIRAError
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
+
+from jira_analyzer.config import Config
+from jira_analyzer.models import AssigneeChange, Issue, StatusTransition
 
 
 def build_date_filtered_jql(
@@ -40,15 +49,6 @@ def build_date_filtered_jql(
         result += ' AND type != Epic'
 
     return result
-from tenacity import (
-    retry,
-    retry_if_exception_type,
-    stop_after_attempt,
-    wait_exponential,
-)
-
-from jira_analyzer.config import Config
-from jira_analyzer.models import AssigneeChange, Issue, StatusTransition
 
 
 class RateLimitError(Exception):
@@ -178,6 +178,78 @@ class JiraClient:
             if e.status_code == 400:
                 raise ValueError(f"Invalid JQL query: {e.text}") from e
             raise
+
+    @retry(
+        retry=retry_if_exception_type(RateLimitError),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=60),
+        reraise=True,
+    )
+    def search_roadmap_issues(self, jql: str, date_fields: list[str] | None = None) -> list[dict]:
+        """Search for issues relevant to roadmap visualization.
+
+        Unlike search_all_issues, this does NOT expand changelog (not needed
+        for roadmap) and requests roadmap-specific fields.
+
+        Args:
+            jql: JQL query string
+            date_fields: Custom field IDs for start/end dates
+
+        Returns:
+            List of raw issue dicts
+
+        Raises:
+            RateLimitError: If rate limited (will be retried)
+            AuthenticationError: If authentication fails
+            JIRAError: For other JIRA API errors
+        """
+        client = self._get_client()
+
+        try:
+            fields = ["summary", "issuetype", "status", "issuelinks"]
+            if date_fields:
+                fields.extend(date_fields)
+
+            result = client.enhanced_search_issues(
+                jql,
+                maxResults=0,
+                fields=fields,
+            )
+
+            return [self._issue_to_dict(issue) for issue in result]
+
+        except JIRAError as e:
+            if e.status_code == 429:
+                raise RateLimitError(
+                    "Rate limited by JIRA. Retrying with exponential backoff..."
+                ) from e
+            if e.status_code == 401:
+                raise AuthenticationError(
+                    "Authentication failed. Check your email and API token."
+                ) from e
+            if e.status_code == 400:
+                raise ValueError(f"Invalid JQL query: {e.text}") from e
+            raise
+
+    def list_link_types(self) -> list[str]:
+        """Get available issue link type names from JIRA.
+
+        Returns:
+            List of link type names (e.g., ["Relates", "Blocks", "Cloners"])
+
+        Raises:
+            AuthenticationError: If authentication fails
+        """
+        client = self._get_client()
+        try:
+            link_types = client.issue_link_types()
+        except JIRAError as e:
+            if e.status_code == 401:
+                raise AuthenticationError(
+                    "Authentication failed. Check your email and API token."
+                ) from e
+            raise
+        return [lt.name for lt in link_types]
 
     def _issue_to_dict(self, issue) -> dict:
         """Convert JIRA issue object to dictionary."""
@@ -311,7 +383,6 @@ class JiraClient:
 
         # Fallback: strip timezone and parse
         try:
-            clean = timestamp_str.split("+")[0].split("-")[0:3]
             return datetime.fromisoformat(timestamp_str[:19])
         except (ValueError, IndexError):
             return datetime.min
