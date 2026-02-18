@@ -118,6 +118,14 @@ def generate_demo_result() -> WebAnalysisResult:
         ),
     ]
 
+    # Demo initiative mapping (DEMO-102 and DEMO-101 share an initiative)
+    epic_initiatives = {
+        "DEMO-100": {"key": "INIT-1", "title": "Platform Security"},
+        "DEMO-101": {"key": "INIT-2", "title": "User Experience"},
+        "DEMO-102": {"key": "INIT-2", "title": "User Experience"},
+        "DEMO-103": {"key": "INIT-3", "title": "Mobile Strategy"},
+    }
+
     return WebAnalysisResult(
         jql_query='project = DEMO AND sprint = "Sprint 42"',
         raw_jql_query='(project = DEMO AND sprint = "Sprint 42") AND (status changed DURING ("2026-01-27", "2026-02-10") OR (updated >= "2026-01-27" AND updated <= "2026-02-10")) AND type != Epic',
@@ -133,4 +141,5 @@ def generate_demo_result() -> WebAnalysisResult:
         epic_chart_data=epic_chart_data,
         issue_table_data=issue_table_data,
         issues_no_time_data=issues_no_time_data,
+        epic_initiatives=epic_initiatives,
     )

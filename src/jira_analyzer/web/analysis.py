@@ -1,7 +1,7 @@
 """Analysis orchestration for web interface - bridges web layer to core modules."""
 
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 
 from jira_analyzer.cache import get_cached_issues, save_to_cache
@@ -79,6 +79,7 @@ class WebAnalysisResult:
     epic_chart_data: EpicChartData
     issue_table_data: list[IssueRow]
     issues_no_time_data: list[IssueRow]
+    epic_initiatives: dict[str, dict | None] = field(default_factory=dict)
 
 
 class AnalysisError(Exception):
@@ -262,6 +263,15 @@ def run_analysis(
         issues, issues_no_time_keys, config.jira_url
     )
 
+    # Fetch initiative data for epics (best-effort; silently ignored if it fails)
+    epic_initiatives: dict[str, dict | None] = {}
+    epic_keys_for_initiatives = [k for k in epic_chart_data.epic_keys if k]
+    if epic_keys_for_initiatives:
+        try:
+            epic_initiatives = client.fetch_epic_initiatives(epic_keys_for_initiatives)
+        except Exception:
+            pass
+
     return WebAnalysisResult(
         jql_query=jql,
         raw_jql_query=raw_jql,
@@ -277,6 +287,7 @@ def run_analysis(
         epic_chart_data=epic_chart_data,
         issue_table_data=issue_table_data,
         issues_no_time_data=issues_no_time_data,
+        epic_initiatives=epic_initiatives,
     )
 
 

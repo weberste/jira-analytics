@@ -18,6 +18,7 @@ let epicGroups = [];
 let selectedEpicIndices = new Set();
 let jiraBaseUrl = '';
 let groupIdCounter = 0;
+let epicInitiatives = {};
 
 /**
  * Initialize the issue table with data
@@ -594,8 +595,9 @@ function buildJqlFromMode() {
  * Initialize the epic table with JS rendering
  * @param {string} jiraUrl - Base JIRA URL
  */
-function initEpicTable(jiraUrl) {
+function initEpicTable(jiraUrl, initiativeData) {
     jiraBaseUrl = jiraUrl.replace(/\/+$/, '');
+    epicInitiatives = initiativeData || {};
     renderEpicTable();
 }
 
@@ -805,6 +807,10 @@ function updateToolbar() {
     if (selectedEpicIndices.size >= 2) {
         html += `<button class="btn-sm" onclick="groupSelectedEpics()">Group Selected (${selectedEpicIndices.size})</button>`;
     }
+    const hasInitiativeData = Object.values(epicInitiatives).some(v => v !== null);
+    if (hasInitiativeData) {
+        html += `<button class="btn-sm" onclick="groupByInitiative()">Group by Initiative</button>`;
+    }
     if (epicGroups.length > 0) {
         html += `<button class="btn-sm" onclick="ungroupAll()">Ungroup All</button>`;
     }
@@ -869,6 +875,68 @@ function ungroupById(id) {
 function ungroupAll() {
     epicGroups = [];
     selectedEpicIndices.clear();
+    renderEpicTable();
+    if (typeof updateChartForGroups === 'function') {
+        updateChartForGroups();
+    }
+}
+
+/**
+ * Auto-group epics by their linked initiative.
+ * Epics without an initiative are collected into a "No Initiative" group.
+ */
+function groupByInitiative() {
+    epicGroups = [];
+    selectedEpicIndices.clear();
+
+    // initiative_key -> { name, indices[] }
+    const initiativeMap = {};
+    const noInitiativeIndices = [];
+
+    for (let i = 0; i < chartData.epic_keys.length; i++) {
+        const epicKey = chartData.epic_keys[i];
+        if (!epicKey) {
+            noInitiativeIndices.push(i);
+            continue;
+        }
+        const initiative = epicInitiatives[epicKey];
+        if (initiative) {
+            if (!initiativeMap[initiative.key]) {
+                initiativeMap[initiative.key] = { name: initiative.title, indices: [] };
+            }
+            initiativeMap[initiative.key].indices.push(i);
+        } else {
+            noInitiativeIndices.push(i);
+        }
+    }
+
+    // Create a group for each initiative
+    for (const { name, indices } of Object.values(initiativeMap)) {
+        if (indices.length === 0) continue;
+        const baseColor = chartData.colors[indices[0]];
+        const shades = generateColorShades(baseColor, indices.length);
+        epicGroups.push({
+            id: ++groupIdCounter,
+            name: name,
+            members: indices,
+            baseColor: baseColor,
+            shades: shades,
+        });
+    }
+
+    // "No Initiative" catch-all
+    if (noInitiativeIndices.length > 0) {
+        const baseColor = '#bab0ab';
+        const shades = generateColorShades(baseColor, noInitiativeIndices.length);
+        epicGroups.push({
+            id: ++groupIdCounter,
+            name: 'No Initiative',
+            members: noInitiativeIndices,
+            baseColor: baseColor,
+            shades: shades,
+        });
+    }
+
     renderEpicTable();
     if (typeof updateChartForGroups === 'function') {
         updateChartForGroups();

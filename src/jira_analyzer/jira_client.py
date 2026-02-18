@@ -179,6 +179,55 @@ class JiraClient:
                 raise ValueError(f"Invalid JQL query: {e.text}") from e
             raise
 
+    def fetch_epic_initiatives(self, epic_keys: list[str]) -> dict[str, dict | None]:
+        """Fetch the initiative linked to each epic via JIRA issue links.
+
+        Looks for linked issues of type 'Initiative' for each epic.
+        An epic may be linked to an initiative via any link type, in either direction.
+
+        Args:
+            epic_keys: List of non-null epic keys to look up
+
+        Returns:
+            Dict mapping epic_key -> {"key": ..., "title": ...} or None if no initiative found
+        """
+        if not epic_keys:
+            return {}
+
+        client = self._get_client()
+        result: dict[str, dict | None] = {}
+
+        BATCH_SIZE = 50
+        for i in range(0, len(epic_keys), BATCH_SIZE):
+            batch = epic_keys[i : i + BATCH_SIZE]
+            keys_str = ", ".join(batch)
+            jql = f"key in ({keys_str})"
+
+            try:
+                issues = client.search_issues(jql, fields="issuelinks", maxResults=len(batch))
+            except JIRAError:
+                continue
+
+            for issue in issues:
+                initiative = None
+                links = getattr(issue.fields, "issuelinks", []) or []
+                for link in links:
+                    for direction in ("outwardIssue", "inwardIssue"):
+                        linked = getattr(link, direction, None)
+                        if linked is None:
+                            continue
+                        try:
+                            if linked.fields.issuetype.name == "Initiative":
+                                initiative = {"key": linked.key, "title": linked.fields.summary}
+                                break
+                        except AttributeError:
+                            continue
+                    if initiative:
+                        break
+                result[issue.key] = initiative
+
+        return result
+
     def _issue_to_dict(self, issue) -> dict:
         """Convert JIRA issue object to dictionary."""
         return {

@@ -93,7 +93,8 @@
 
         // Initialize epic table (JS-rendered with grouping support)
         if (typeof initEpicTable === 'function') {
-            initEpicTable('{{ result.jira_url | e }}');
+            const initiativeData = {{ result.epic_initiatives | tojson | safe }};
+            initEpicTable('{{ result.jira_url | e }}', initiativeData);
         }
 
         // Initialize table functionality
