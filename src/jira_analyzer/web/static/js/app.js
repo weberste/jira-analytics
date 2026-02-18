@@ -19,6 +19,7 @@ let selectedEpicIndices = new Set();
 let jiraBaseUrl = '';
 let groupIdCounter = 0;
 let epicInitiatives = {};
+let initiativeGroupingActive = false;
 
 /**
  * Initialize the issue table with data
@@ -758,7 +759,7 @@ function renderEpicTable() {
                 <td class="clickable-cell truncate" onclick='filterTableByEpic(${JSON.stringify(epicKey)}, ${JSON.stringify(label)})' title="${label}">${label}</td>
                 <td class="text-right">${value}</td>
                 <td class="text-right">${pct}%</td>
-                <td style="padding: 4px 8px; text-align: center;"><input type="checkbox" class="epic-checkbox" data-index="${i}" ${checked} ${inGroup ? 'disabled' : ''}></td>
+                <td style="padding: 4px 8px; text-align: center;">${initiativeGroupingActive ? '' : `<input type="checkbox" class="epic-checkbox" data-index="${i}" ${checked} ${inGroup ? 'disabled' : ''}>`}</td>
             </tr>`;
         } else {
             // Subtotal row
@@ -773,7 +774,7 @@ function renderEpicTable() {
                 <td class="clickable-cell" onclick='filterTableByGroup(${JSON.stringify(epicKeys)}, ${JSON.stringify(group.name)})'>${group.name}</td>
                 <td class="text-right">${totalHours.toFixed(1)}</td>
                 <td class="text-right">${totalPct.toFixed(1)}%</td>
-                <td style="padding: 4px 8px; text-align: center;"><button class="btn-ungroup" onclick="ungroupById(${group.id})" title="Ungroup">✕</button></td>
+                <td style="padding: 4px 8px; text-align: center;">${initiativeGroupingActive ? '' : `<button class="btn-ungroup" onclick="ungroupById(${group.id})" title="Ungroup">✕</button>`}</td>
             </tr>`;
         }
     }
@@ -804,15 +805,19 @@ function updateToolbar() {
     if (!toolbar) return;
 
     let html = '';
-    if (selectedEpicIndices.size >= 2) {
-        html += `<button class="btn-sm" onclick="groupSelectedEpics()">Group Selected (${selectedEpicIndices.size})</button>`;
-    }
-    const hasInitiativeData = Object.values(epicInitiatives).some(v => v !== null);
-    if (hasInitiativeData) {
-        html += `<button class="btn-sm" onclick="groupByInitiative()">Group by Initiative</button>`;
-    }
-    if (epicGroups.length > 0) {
+    if (initiativeGroupingActive) {
         html += `<button class="btn-sm" onclick="ungroupAll()">Ungroup All</button>`;
+    } else {
+        if (selectedEpicIndices.size >= 2) {
+            html += `<button class="btn-sm" onclick="groupSelectedEpics()">Group Selected (${selectedEpicIndices.size})</button>`;
+        }
+        const hasInitiativeData = Object.values(epicInitiatives).some(v => v !== null);
+        if (hasInitiativeData) {
+            html += `<button class="btn-sm" onclick="groupByInitiative()">Group by Initiative</button>`;
+        }
+        if (epicGroups.length > 0) {
+            html += `<button class="btn-sm" onclick="ungroupAll()">Ungroup All</button>`;
+        }
     }
     toolbar.innerHTML = html;
 }
@@ -875,6 +880,7 @@ function ungroupById(id) {
 function ungroupAll() {
     epicGroups = [];
     selectedEpicIndices.clear();
+    initiativeGroupingActive = false;
     renderEpicTable();
     if (typeof updateChartForGroups === 'function') {
         updateChartForGroups();
@@ -888,6 +894,7 @@ function ungroupAll() {
 function groupByInitiative() {
     epicGroups = [];
     selectedEpicIndices.clear();
+    initiativeGroupingActive = true;
 
     // initiative_key -> { name, indices[] }
     const initiativeMap = {};
